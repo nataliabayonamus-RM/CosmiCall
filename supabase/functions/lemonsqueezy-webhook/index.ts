@@ -51,25 +51,28 @@ Deno.serve(async (req) => {
       case "subscription_updated":
       case "subscription_cancelled":
       case "subscription_expired": {
-        const { data: existing } = await supabase
+        const { data: existing, error: selectError } = await supabase
           .from("accesos")
           .select("email")
           .eq("email", email)
           .maybeSingle();
+        if (selectError) throw new Error(`select accesos: ${JSON.stringify(selectError)}`);
 
         if (existing) {
-          await supabase
+          const { error: updateError } = await supabase
             .from("accesos")
             .update({ activo, ls_customer_id: customerId, ls_subscription_id: subscriptionId })
             .eq("email", email);
+          if (updateError) throw new Error(`update accesos: ${JSON.stringify(updateError)}`);
         } else {
-          await supabase.from("accesos").insert({
+          const { error: insertError } = await supabase.from("accesos").insert({
             email,
             nombre: attrs?.user_name || email.split("@")[0],
             activo,
             ls_customer_id: customerId,
             ls_subscription_id: subscriptionId,
           });
+          if (insertError) throw new Error(`insert accesos: ${JSON.stringify(insertError)}`);
         }
         break;
       }
