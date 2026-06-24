@@ -2721,8 +2721,8 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
         <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>{t("settingsMyAccount")}</h3>
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
           <Row icon="💳" label={loadingPortal?t("settingsOpeningPortal"):t("settingsChangePlan")} onClick={loadingPortal?undefined:openPlanPortal} />
-          <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>window.open("mailto:atencionalcoientem@gmail.com","_blank")} />
-          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>window.open("mailto:atencionalcoientem@gmail.com","_blank")} />
+          <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>{window.location.href="mailto:atencionalcoientem@gmail.com";}} />
+          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>{window.location.href="mailto:atencionalcoientem@gmail.com";}} />
         </div>
         {portalError&&<p style={{color:C.danger,fontSize:12,marginTop:8,lineHeight:1.5}}>{portalError}</p>}
       </div>
