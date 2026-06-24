@@ -1,10 +1,49 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const WEBHOOK_SECRET = Deno.env.get("LEMONSQUEEZY_WEBHOOK_SECRET")!;
+const META_PIXEL_ID = Deno.env.get("META_PIXEL_ID");
+const META_ACCESS_TOKEN = Deno.env.get("META_ACCESS_TOKEN");
+const META_TEST_EVENT_CODE = Deno.env.get("META_TEST_EVENT_CODE"); // opcional, quitar cuando ya esté en real
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
+
+async function sha256(text: string) {
+  const data = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sendMetaPurchaseEvent(email: string, value: number, currency: string) {
+  if (!META_PIXEL_ID || !META_ACCESS_TOKEN) return;
+
+  const hashedEmail = await sha256(email);
+  const body = {
+    data: [
+      {
+        event_name: "Purchase",
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: "system_generated",
+        user_data: { em: [hashedEmail] },
+        custom_data: { currency, value },
+      },
+    ],
+    ...(META_TEST_EVENT_CODE ? { test_event_code: META_TEST_EVENT_CODE } : {}),
+  };
+
+  const r = await fetch(
+    `https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events?access_token=${META_ACCESS_TOKEN}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
+  if (!r.ok) {
+    console.error("Meta CAPI error:", await r.text());
+  }
+}
 
 async function verifySignature(rawBody: string, signature: string) {
   const key = await crypto.subtle.importKey(
@@ -73,6 +112,12 @@ Deno.serve(async (req) => {
             ls_subscription_id: subscriptionId,
           });
           if (insertError) throw new Error(`insert accesos: ${JSON.stringify(insertError)}`);
+        }
+
+        if (eventName === "subscription_created") {
+          const value = Number(attrs?.first_subscription_item?.price ?? attrs?.total ?? 0) / 100;
+          const currency = String(attrs?.currency || "USD");
+          await sendMetaPurchaseEvent(email, value, currency);
         }
         break;
       }
