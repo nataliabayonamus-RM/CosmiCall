@@ -66,6 +66,7 @@ const TRANSLATIONS = {
     settingsOpeningPortal: "Abriendo gestión de plan…",
     settingsHelpCenter: "Centro de ayuda",
     settingsContactUs: "Contáctanos",
+    settingsContactMessage: "Si tienes problemas o preguntas, contáctanos a:",
     settingsPortalError: "No pudimos abrir la gestión de tu plan. Si el problema persiste, escríbenos a atencionalcoientem@gmail.com.",
     settingsLogout: "Cerrar sesión",
 
@@ -310,6 +311,7 @@ const TRANSLATIONS = {
     settingsOpeningPortal: "Opening plan management…",
     settingsHelpCenter: "Help center",
     settingsContactUs: "Contact us",
+    settingsContactMessage: "If you have any issues or questions, contact us at:",
     settingsPortalError: "We couldn't open your plan management. If the problem persists, write to us at atencionalcoientem@gmail.com.",
     settingsLogout: "Log out",
 
@@ -2721,10 +2723,11 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
         <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>{t("settingsMyAccount")}</h3>
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
           <Row icon="💳" label={loadingPortal?t("settingsOpeningPortal"):t("settingsChangePlan")} onClick={loadingPortal?undefined:openPlanPortal} />
-          <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>{window.location.href="mailto:atencionalcoientem@gmail.com";}} />
-          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>{window.location.href="mailto:atencionalcoientem@gmail.com";}} />
         </div>
         {portalError&&<p style={{color:C.danger,fontSize:12,marginTop:8,lineHeight:1.5}}>{portalError}</p>}
+        <p style={{color:C.muted,fontSize:12,marginTop:10,lineHeight:1.5}}>
+          {t("settingsContactMessage")} <span style={{color:C_ACCESS.gold}}>atencionalcoientem@gmail.com</span>
+        </p>
       </div>
 
       <div style={{padding:"16px 16px 32px"}}>
