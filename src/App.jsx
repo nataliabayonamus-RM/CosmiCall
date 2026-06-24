@@ -1234,9 +1234,62 @@ const ORACLE_TEXTS = {
   },
 };
 
-function getOracleForToday(chart, transits) {
+const ORACLE_TEXTS_EN = {
+  "Luna Nueva": {
+    energia: ["Today is a good day to start something you've been putting off. The New Moon brings the energy of beginnings, so if you've got an idea in mind, this is the moment to take the first step (New Moon, planting-the-seeds phase).", "You might feel the urge to shake up your routine or how you present yourself to the world. That's normal — the New Moon activates that craving for renewal. Use it to write down what you want to accomplish this month (the New Moon favors setting intentions).", "If you're feeling fresh energy and the itch to begin today, don't ignore it. The New Moon is the best time to start projects, make new decisions, or simply reset your mindset (New Moon, the zero point of the lunar cycle)."],
+    amor: ["In relationships, today is a good day for that conversation you've been avoiding. The fresh-start energy of the New Moon applies to love too — you can propose something new or clear up something unresolved.", "If you're single, you might feel like meeting new people or changing something about how you connect with others. Listen to that pull — the New Moon opens doors in your relationships (the New Moon activates the 7th House of relationships).", "If you're in a relationship, it's a good moment to bring up something you want to improve together. Today's not for fighting — it's for making new agreements (the New Moon favors new commitments)."],
+    trabajo: ["Professionally, if you have a proposal or idea you want to pitch, today carries good energy for it. The New Moon supports beginnings and new proposals (the New Moon favors launches).", "You might feel motivated to organize your work goals. Use it — write down your objectives for the month and prioritize what matters most (the New Moon asks for clarity of intention).", "If you're job hunting or looking for new clients, today is a good day to take that step you've been delaying. Send that message, make that call (New Moon, beginnings energy)."],
+    consejo: ["Write down a concrete intention for this month — something specific you want to achieve or change.", "Take the first step on that project you keep postponing. It doesn't have to be perfect, it just has to start.", "Make a list of what you want to leave behind and another of what you want to bring into your life this cycle."],
+  },
+  "Creciente": {
+    energia: ["You might feel more energy and drive to move your projects forward today. The Waxing Crescent Moon is the action phase — what you planted in recent days starts to move (Waxing Crescent, momentum phase).", "If you have things pending, today is a good day to tackle them. The energy favors moving forward, not waiting (the Waxing Crescent activates motivation and momentum).", "You might notice things starting to flow a bit more easily. Make the most of it — act on what matters most and don't get distracted (Waxing Crescent, a moment of sustained action)."],
+    amor: ["In relationships, the Waxing Crescent favors getting closer to someone you like or deepening a relationship you already have. It's a moment to move forward, not wait for the other person to make the first move.", "If there's something you want to tell your partner or someone you're interested in, today you have the energy to say it more naturally (the Waxing Crescent fuels emotional expression).", "You might feel more drawn to connect with people. Accept that invitation, send that text, make that plan — the Waxing Crescent supports connections that are growing."],
+    trabajo: ["The Waxing Crescent is perfect for moving forward on projects already in motion. Focus on one or two key goals today and take concrete steps (Waxing Crescent, building phase).", "If you need to negotiate, present, or communicate something at work, today the energy is on your side. Smooth communication is activated (Mercury benefits from the Waxing Crescent).", "It's a good time to follow up on proposals you've sent or pick back up on work conversations that stalled (the Waxing Crescent reactivates what was stuck)."],
+    consejo: ["Pick one important task you've been avoiding and do it today, without aiming for perfection.", "Communicate something you've been sitting on — a message, a proposal, a conversation.", "Move forward even if you don't have it all figured out. The Waxing Crescent rewards action, not waiting."],
+  },
+  "Cuarto Creciente": {
+    energia: ["You might face a decision today that you can't keep putting off. The First Quarter Moon's energy asks you to choose a path (First Quarter, a moment of decision and commitment).", "If you feel tension between two options, or between what you want and what you feel you should do, that's normal — this lunar phase stirs up exactly that. The key is to decide and commit (the First Quarter generates creative tension).", "Today things might feel like they require more effort than usual. That's not a sign something's wrong — it's the Moon asking you to truly commit to what you're building (the First Quarter demands decision)."],
+    amor: ["In love, today you might have to make a decision about a relationship or situation you've been avoiding defining. The day's energy is pushing you toward clarity (the First Quarter calls for defining relationships).", "If something in your relationship isn't working, today is a good day to talk about it honestly. Not to fight, but to decide together what you both want (the First Quarter activates necessary conversations).", "If you're stuck in romantic indecision — between two people, between staying or leaving — today's energy is asking you to choose. Staying undecided has a cost too (First Quarter, time to commit)."],
+    trabajo: ["Professionally, if there's a work decision you've been postponing, today's the moment to make it. Staying in limbo costs more than making a mistake and correcting it (the First Quarter demands decisive action).", "Work might require more focus and effort today. It's a good day to tackle complex things that need deep thinking (the First Quarter activates the analytical mind).", "If you need to present results, defend a proposal, or take on a new responsibility, today you have the energy for it (the First Quarter gives you the strength to commit to what matters)."],
+    consejo: ["Make the decision you've been postponing — any decision made with intention beats staying in limbo.", "Speak honestly about something you're avoiding, whether at work or in a relationship.", "Commit to a single priority today and give it all your energy."],
+  },
+  "Gibosa Creciente": {
+    energia: ["You might feel like you're close to something but missing that last push. That's exactly what the Moon is asking for in this phase — refinement and final adjustments before culmination (Waxing Gibbous, the perfecting phase).", "If you're building something — a project, a relationship, a goal — today is a good day to review it and polish the details. It's not the time to start something new, but to perfect what you already have (the Waxing Gibbous calls for attention to detail).", "You might feel clearer today about what you want and what's still missing to get there. Use that clarity to adjust and prepare for the coming days (the Waxing Gibbous activates vision and refinement)."],
+    amor: ["In relationships, today is a good day to pay attention to the details — a gesture, a pending conversation, something you can improve in how you connect with others (the Waxing Gibbous refines connections).", "If you're in a relationship, you might notice small things worth improving in the dynamic. It's a good time to adjust, not to dramatize — small changes have a big impact right now (the Waxing Gibbous favors subtle adjustments).", "If you're getting to know someone, today is a good day to go a bit deeper — a more honest conversation, a more concrete plan, a clearer sign of what you want (the Waxing Gibbous calls for authenticity)."],
+    trabajo: ["The Waxing Gibbous is ideal for reviewing and improving projects before presenting them. If you have something due soon, give it one last pass today — you might find important improvements.", "It's a good day to sort out technical details, fix errors, or fine-tune a proposal. Today's energy favors precision (the Waxing Gibbous activates Virgo-like attention to detail).", "If you have an important presentation, deliverable, or meeting coming up, prepare well today. The Moon supports you in nailing the details that make the difference (Waxing Gibbous, preparing for the peak moment)."],
+    consejo: ["Review something that's almost ready and make the final adjustments it needs.", "Pay attention to a detail you've been ignoring — it might matter more than you think.", "Prepare for something important that's coming up — organize, fine-tune, anticipate."],
+  },
+  "Luna Llena": {
+    energia: ["The Full Moon brings clarity but can also intensify emotions. If you're feeling more than usual today — more emotion, more sensitivity, more need for connection — that's normal (the Full Moon amplifies everything you feel).", "Something might reach its culmination today — a decision gets resolved, a result arrives, a truth comes to light. The Full Moon is a time of harvest and revelation (the Full Moon, opposite the Sun, activates awareness).", "If you feel more emotional or reactive than usual today, don't fight it. The Full Moon intensifies emotions and intuition alike — use them as information, not as an excuse to react impulsively."],
+    amor: ["The Full Moon is the most intense phase for relationships. Something that was hidden might come to light, or a feeling you'd been holding back might finally be expressed (the Full Moon activates emotional honesty).", "If there's something you need to tell someone — whether out of love or to set a boundary — today you have the emotional energy to do it. Just mind how you say it, because intensity is running high (the Full Moon can exaggerate reactions).", "In love, the Full Moon can bring moments of deep connection or necessary confrontation. Either way, what happens today carries weight — be present and honest (Full Moon, a moment of truth in relationships)."],
+    trabajo: ["Professionally, the Full Moon can bring results — an answer you were waiting for, the close of a process, recognition for something you did. Stay alert for the signs (Full Moon, a moment of professional harvest).", "You might find it harder to concentrate today because emotions are running high. If so, prioritize work that needs creativity or human connection over work that needs cold analysis (the Full Moon favors the emotional over the analytical).", "If something you'd been waiting on gets resolved today — a negotiation, an answer, a project — celebrate it even if the outcome isn't perfect. The Full Moon closes cycles (Full Moon, the closing of chapters)."],
+    consejo: ["Express yourself honestly today — what you feel carries more weight than you think.", "Celebrate something you've achieved, even something small. The Full Moon is a time to acknowledge how far you've come.", "If you feel overwhelmed, step outside for a moment and look at the moon — it literally helps bring the intensity down."],
+  },
+  "Gibosa Menguante": {
+    energia: ["You might feel the momentum of recent days easing off a bit today. That's normal — the Waning Moon asks you to start letting go of what you no longer need and to give thanks for what you have (Waning Gibbous, the gratitude-and-sharing phase).", "It's a good time to reflect on what you've accomplished this cycle and to share what you know with others. Today's energy favors generosity and teaching (the Waning Gibbous activates giving and sharing).", "You might feel like tidying up, cleaning, or wrapping up loose ends today. Go with that impulse — the Waning Gibbous supports organizing and closing out processes (the Waning Moon asks you to release what's already served its cycle)."],
+    amor: ["In relationships, the Waning Gibbous favors gratitude and recognition. Tell someone you appreciate what they do for you — those small gestures strengthen bonds more than you'd think.", "If something in a relationship isn't serving you anymore — a dynamic, a pattern, an expectation — today you have the clarity to see it and start letting it go (the Waning Gibbous, a moment to release what no longer serves love).", "It's a good day to spend quality time with people you love, without an agenda or pressure. Today's energy favors calm, genuine connection (the Waning Gibbous activates warmth in relationships)."],
+    trabajo: ["It's a good time to close out projects that are nearly finished, deliver pending work, and tidy your workspace (the Waning Gibbous favors wrapping up and organizing).", "You might gain clarity today about something that isn't working in your job and needs to change. Don't ignore it — this phase gives you the vision to see what needs to be released (the Waning Gibbous activates discernment).", "It's a good day to recognize your team's work or to thank someone who has supported you professionally. Those gestures build things too (Waning Gibbous, the energy of recognition and gratitude)."],
+    consejo: ["Thank someone today — genuinely, with specific words. Don't take the support you receive for granted.", "Close something you've been putting off for a while. The Waning Gibbous gives you the energy to finish it.", "Let go of an expectation that's weighing on you — not everything has to go exactly as planned."],
+  },
+  "Cuarto Menguante": {
+    energia: ["You might feel a stronger need for solitude or to slow down today. Don't push against it — the Last Quarter asks for introspection, and it's perfectly valid to need a breather (Last Quarter, the letting-go-and-forgiving phase).", "It's a good time to review which habits, relationships, or situations aren't serving you anymore. Not to act on it yet, just to get clear on what you want to release (the Last Quarter activates discernment).", "If you feel more tired or less motivated than the past few days, that's the Moon doing its work — it's asking you to rest and process before the next cycle begins (Last Quarter, a natural slowing-down phase)."],
+    amor: ["In relationships, the Last Quarter invites forgiveness — whether of someone who hurt you or of yourself for something you did or didn't do. Forgiveness isn't for the other person, it's to free yourself (the Last Quarter activates emotional healing).", "If there's a relationship you know is already over but haven't been able to let go of, today you have more strength to begin that process of detachment. You don't have to resolve it all today, just take the first internal step (Last Quarter, time to let go).", "It's a good day for an honest, calm conversation — no drama, no demands. Just to clear the air and heal something left unresolved (the Last Quarter favors closure and healing conversations)."],
+    trabajo: ["The Last Quarter is a good time to evaluate what in your work isn't paying off anymore and to plan changes for the next cycle. It's not a time to launch new things but to reflect (Last Quarter, evaluation phase).", "If you have pending tasks you've been postponing for days, today is a good day to close them out for good. The day's energy supports endings and closures (the Last Quarter favors finishing the unfinished).", "Consider whether there's something at work weighing on you unnecessarily — a responsibility that isn't yours, a project that no longer makes sense, a dynamic that drains you. Name it today even if you don't solve it yet."],
+    consejo: ["Give yourself permission to rest without guilt. You don't always have to be in productivity mode.", "Reflect on something you want to leave behind in the next cycle — a belief, a habit, a situation.", "Practice letting go of something small today: an expectation, a grudge, a task that isn't yours to carry."],
+  },
+  "Menguante": {
+    energia: ["The Waning Moon is the phase of rest and reflection before the next cycle. If you feel low on energy or just want some quiet today, that's exactly what the Moon is asking for (Waning Moon, closing-and-resting phase).", "It's a time to process what you lived through this lunar cycle before starting a new one. Don't make big decisions today — instead, observe and reflect (Waning Moon, integration time).", "You might feel more sensitive or drawn to silence today. Honor that — today's introspection plants tomorrow's clarity (the Waning Moon activates inner wisdom)."],
+    amor: ["In relationships, the Waning Moon favors quiet connection — an intimate conversation, a shared moment of silence, simply being present without an agenda (Waning Moon, depth without drama).", "If you're processing something difficult in love, today you have more capacity to see things with perspective. Don't act yet, just observe what you feel with honesty (Waning Moon, a moment of emotional clarity).", "It's a good day to spend time on yourself before giving to others again. Healthy relationships start with being okay within yourself (the Waning Moon activates self-care and recharging)."],
+    trabajo: ["The Waning Moon isn't the best phase for launching new projects, but it's great for planning and preparing the next cycle. Organize your ideas for what's coming (Waning Moon, planning time).", "Work might flow better today if you approach it calmly and without pressure. Avoid scheduling important meetings or presentations if you can — save them for when the energy picks back up (Waning Moon, a naturally low-energy phase).", "It's a good time to do introspective work — evaluate processes, review strategies, document what you've learned. That invisible work is what plants future results (the Waning Moon favors reflection over action)."],
+    consejo: ["Really rest today. Rest is part of the process, not the enemy of productivity.", "Write in a journal or notes about what you learned from this cycle — a lesson, an achievement, something you want to change.", "Calmly prepare what you want to start at the next New Moon."],
+  },
+};
+
+function getOracleForToday(chart, transits, language) {
   const moon = getMoonPhase();
-  const texts = ORACLE_TEXTS[moon.name] || ORACLE_TEXTS["Creciente"];
+  const table = language === "en" ? ORACLE_TEXTS_EN : ORACLE_TEXTS;
+  const fallbackTable = language === "en" ? ORACLE_TEXTS_EN : ORACLE_TEXTS;
+  const texts = table[moon.name] || fallbackTable["Creciente"];
   // Rotate texts by day of month so it cambia cada día
   const day = new Date().getDate();
   const idx = day % 3;
@@ -1245,7 +1298,11 @@ function getOracleForToday(chart, transits) {
   if (chart) {
     const sunSign = chart.planets.Sol.sign;
     const moonSign = chart.planets.Luna.sign;
-    const extras = [
+    const extras = language === "en" ? [
+      `Remember that your Moon in ${moonSign} needs to feel safe before it acts — giving yourself that space today is productive, not lazy.`,
+      `With your Sun in ${sunSign}, you have more strength than you give yourself credit for. Put it toward something concrete today.`,
+      `Your birth chart is asking for authenticity. Today, be honest with yourself about what you actually want.`,
+    ] : [
       `Recuerda que tu Luna en ${moonSign} necesita sentirse segura antes de actuar — darte ese espacio hoy es productivo, no pereza.`,
       `Con tu Sol en ${sunSign}, tienes más fuerza de la que crees. Úsala en algo concreto hoy.`,
       `Tu carta natal pide autenticidad. Hoy, sé honesta contigo misma sobre qué quieres realmente.`,
@@ -1287,8 +1344,34 @@ const TAROT = [
   {n:"El Mundo",s:"XXI",past:"Completaste algo significativo — un ciclo, un aprendizaje, una etapa de vida. Ese logro vale más de lo que le das crédito.",present:"Estás cerca de completar algo importante. No abandones ahora — la llegada está más cerca de lo que parece.",future:"Un ciclo importante está por cerrarse de forma satisfactoria. Lo que has construido y aprendido te ha llevado exactamente a donde necesitabas estar. El próximo ciclo comienza desde un lugar más sabio."},
 ];
 
-function drawTarot() {
-  return [...TAROT].sort(() => Math.random() - 0.5).slice(0, 3);
+const TAROT_EN = [
+  {n:"The Fool",s:"0",past:"There was a time when you leapt into the unknown without knowing exactly where you were headed. That courage is what brought you here.",present:"You're in a moment of beginnings, even if it doesn't feel that way. Something new wants to be born through you.",future:"An unexpected beginning is coming. Don't over-plan it — just move with confidence when the signal arrives."},
+  {n:"The Magician",s:"I",past:"You held every resource you needed to do something great in your hands, and you used them better than you give yourself credit for.",present:"You have more ability than you're recognizing right now. The problem isn't what you're missing, it's believing in what you already have.",future:"Soon you'll have the chance to manifest something you've wanted for a long time. Trust your ability to make it real."},
+  {n:"The High Priestess",s:"II",past:"There were moments when your intuition spoke clearly and you listened — even without fully understanding why.",present:"Something important is happening beneath the surface. Not everything you need to know is visible — trust what you feel even if you can't explain it.",future:"The answer you're looking for will arrive once you stop searching for it with your mind and start listening with your body and intuition."},
+  {n:"The Empress",s:"III",past:"There was a period of abundance, creativity, or intense care for others — and that time planted seeds that are still growing.",present:"You have the energy to create and nurture. Whether it's a project, a relationship, or your own wellbeing — the Empress says you have what it takes.",future:"A period of flourishing is coming. What you've patiently cared for is going to bear visible fruit. Keep watering it."},
+  {n:"The Emperor",s:"IV",past:"You made firm decisions that built a solid foundation. It wasn't all easy, but you're the one who built that stability.",present:"You need more structure and clarity in some area of your life. Not everything can stay up in the air — choose one priority and commit to it.",future:"The stability you're looking for comes from within, not from outside. Once you set clear boundaries and firm decisions, everything else falls into place."},
+  {n:"The Hierophant",s:"V",past:"You learned from someone or some tradition that shaped you in ways you still carry — some of it serves you, some of it you're now reexamining.",present:"You might be questioning something you used to believe in — a rule, a system, an institution. It's valid to ask what's still yours and what no longer is.",future:"You'll find guidance through a teacher, a community, or a teaching that gives you exactly the framework you need. Stay open."},
+  {n:"The Lovers",s:"VI",past:"There was an important choice — maybe between two paths, two people, or two versions of yourself. That decision defined you more than you realize.",present:"You're facing a real choice. It's not just about romantic love — it could be between values, between what you want and what you feel you should do, between staying or moving on.",future:"The decision you make soon will come from the heart, not from logic. And that's okay — some choices are only made well when love makes them."},
+  {n:"The Chariot",s:"VII",past:"You overcame something that seemed impossible through sheer determination. That victory showed you what you're capable of when you focus.",present:"You have the strength to move forward, but you need clear direction. Speeding up does no good if you don't know exactly where you're going.",future:"An important achievement is approaching. It requires you to keep your emotions in check and stay on course even if the road gets hard."},
+  {n:"Strength",s:"VIII",past:"You went through something that demanded more patience and self-control than it seemed. It wasn't weakness — it was a different kind of strength than you were used to.",present:"The situation you're facing now won't be solved with brute force but with calm, compassion, and inner steadiness. You have more of that than you think.",future:"Your greatest strength in what's coming won't be toughness but gentleness — with yourself and with others. That's what will make the difference."},
+  {n:"The Hermit",s:"IX",past:"There was a period of solitude or withdrawal — chosen or not — that taught you things about yourself that only silence can reveal.",present:"You need time for yourself, even if it feels like a luxury you can't afford. The answer you're looking for isn't out there — it's in a moment of honest stillness.",future:"A period of reflection is approaching. Don't see it as isolation but as the preparation you need for the next chapter of your story."},
+  {n:"Wheel of Fortune",s:"X",past:"You've lived through cycles of ups and downs that taught you nothing is permanent — neither the good nor the bad. That lesson is worth more than it seems.",present:"Something is changing in your life, even if you can't see it clearly yet. The Wheel's shifts don't always announce themselves — they simply happen.",future:"An important turn is coming. It could be in your favor or it could be a challenge — either way, you're better prepared to meet it than you think."},
+  {n:"Justice",s:"XI",past:"Something from the past reached its fair consequence, for better or worse. Life balanced a scale that needed adjusting.",present:"A situation in your life is calling for honesty and balance. If you're taking more than you give, or giving more than you receive, Justice is asking you to correct it.",future:"What you give now will come back to you. Justice doesn't punish or reward — it simply balances. Act with integrity and the outcome will be fair."},
+  {n:"The Hanged Man",s:"XII",past:"There was a time when things came to a halt and you had to wait, even though you hated waiting. That pause had a purpose you may be able to see now.",present:"You're in a pause — chosen or forced. Instead of fighting it, use it to see things from a different angle. There's something you're not seeing.",future:"The situation that feels stuck is going to move, but on its own timing, not yours. The key now is to let go of control and trust the process."},
+  {n:"Death",s:"XIII",past:"Something ended that needed to end, even if it hurt. That ending made room for what came after — something that couldn't have arrived any other way.",present:"You're in the middle of a transformation. Something has to die for something new to be born — it could be a relationship, a version of yourself, or a way of doing things.",future:"An important ending is approaching, but don't meet it with fear. What comes after is better than what's ending — even if you can't see it yet."},
+  {n:"Temperance",s:"XIV",past:"You learned to blend opposites — emotion and reason, speed and patience — in ways that gave you a balance you didn't have before.",present:"The situation you're facing calls for moderation and patience. This isn't a moment for extremes — neither giving up nor forcing things. The middle path is the most powerful one right now.",future:"What you're after will come with time, patience, and the right mix of effort and letting go. Not everything has to happen right now. Trust the gradual process."},
+  {n:"The Devil",s:"XV",past:"There was something — a person, a habit, a situation — that had more power over you than it should have. Recognizing that was the first step to freeing yourself.",present:"You might be in a situation where you feel like you have no options, or that something has you trapped. The truth is you have more power than you think — you just have to see it.",future:"You'll free yourself from something that's been limiting you. The first step is recognizing the chain exists — the second is realizing you can take it off."},
+  {n:"The Tower",s:"XVI",past:"Something collapsed unexpectedly — a plan, a relationship, a certainty. That collapse was painful but necessary to build something more real.",present:"You might feel like something in your life is about to shift abruptly, or that something you thought was solid is starting to shake. Resist the urge to hold on to what's already falling.",future:"An unexpected change is coming. You can't avoid it, but you can decide how you'll respond. Towers fall to reveal what was true underneath it all."},
+  {n:"The Star",s:"XVII",past:"After something difficult, you found a spark of hope that didn't go out even in the darkest moment. That spark is what brought you here.",present:"You're in a moment of renewal and healing, even if it doesn't feel like it yet. There are real reasons for hope — look for the small but concrete ones.",future:"A period of calm and clarity is coming after what you've been through. The Star doesn't promise everything will be perfect — it promises there will be light, and that it will be enough."},
+  {n:"The Moon",s:"XVIII",past:"There was a period of confusion, fears, or illusions that was hard to get through. You might still be processing some of the lessons it left behind.",present:"Things aren't entirely what they seem right now. There's something hidden, or something you're not seeing clearly. Don't make big decisions until the fog clears.",future:"The current confusion is temporary. Once the Moon passes, you'll see what's happening with far more clarity, and you'll know exactly what to do."},
+  {n:"The Sun",s:"XIX",past:"There was a moment of great joy, achievement, or clarity that reminded you what it feels like when things flow and everything makes sense.",present:"There's more to celebrate in your life than you're giving yourself credit for. The Sun's energy asks you to see the good — not because the hard stuff isn't real, but because the good is real too.",future:"A period of vitality, clarity, and visible success is coming. Not everything will resolve at once, but the direction is upward and forward. Hold onto that energy."},
+  {n:"Judgement",s:"XX",past:"You had an important realization or a moment of honesty with yourself that changed how you see yourself and your story.",present:"There's an inner calling you're listening to, or that you need to listen to. It's not about what others expect of you — it's about what you know you have to do.",future:"Soon you'll have new clarity about your purpose or direction. When that realization comes, don't ignore it even if it's uncomfortable — it's guiding you toward something important."},
+  {n:"The World",s:"XXI",past:"You completed something significant — a cycle, a lesson, a chapter of life. That achievement is worth more credit than you're giving it.",present:"You're close to completing something important. Don't give up now — the finish line is closer than it looks.",future:"An important cycle is about to close in a satisfying way. What you've built and learned has brought you exactly where you needed to be. The next cycle begins from a wiser place."},
+];
+
+function drawTarot(language) {
+  const deck = language === "en" ? TAROT_EN : TAROT;
+  return [...deck].sort(() => Math.random() - 0.5).slice(0, 3);
 }
 
 // ── COMPATIBILIDAD PREGENERADA ───────────────────────────
@@ -1309,13 +1392,29 @@ const COMPAT_TEXTS = {
   "Agua-Agua": {quimica:"La conexión emocional es profunda e inmediata. Se entienden sin palabras, sienten lo que el otro siente y hay una intimidad natural que pocas combinaciones tienen.", desafio:"Dos aguas pueden ahogarse mutuamente. Si los dos están mal al mismo tiempo, no hay quien ponga el piso. La codependencia es el riesgo más grande de esta combinación.", potencial:"Si mantienen su individualidad dentro de la profundidad que comparten, pueden tener una de las conexiones más íntimas y significativas del zodiaco.", consejo:"Asegúrense de tener amigos, hobbies e intereses fuera de la relación. El amor no puede ser el único ancla de ninguno de los dos."},
 };
 
-function getCompatText(s1, s2, name1, name2) {
+// Element names stay in Spanish as object keys (matching ELEM[sign] lookups elsewhere in the
+// file) even in the English table, since getCompatText() builds the key from ELEM[s1]/ELEM[s2].
+const COMPAT_TEXTS_EN = {
+  "Fuego-Fuego": {quimica:"There's an instant spark between you two. The energy is high, your pace matches, and the mutual motivation can be incredible. The risk is that two fires together can burn out of control — if there isn't room for each of you to shine individually, competition can creep in.", desafio:"You need to learn not to put out each other's fire with your own. When you both want to be the center of attention, nobody wins. The key is leaning on each other's wins instead of competing over them.", potencial:"If you channel that energy toward shared goals, you're unstoppable. A fire-fire couple can build extraordinary things together once they're pointed in the same direction.", consejo:"Celebrate each other's wins as if they were your own. That's what turns competition into teamwork."},
+  "Fuego-Tierra": {quimica:"The attraction is real, and it comes from your differences. Fire admires earth's steadiness; earth feels alive next to fire's energy. The catch is that same difference can create friction over time.", desafio:"Fire might feel like earth is holding back their plans; earth might feel like fire is impulsive and unstable. You need to understand that neither of you is wrong — you just move at different speeds.", potencial:"If you manage to complement each other, you're a powerful combination: fire brings the vision and the energy; earth brings the structure and patience to turn dreams into reality.", consejo:"Before making decisions together, talk about timing. Fire needs movement; earth needs security. You can have both if you negotiate it well."},
+  "Fuego-Aire": {quimica:"This combination has a naturally great energy. Air feeds fire, and fire gives air a sense of purpose. Conversation flows, ideas build on each other, and there's an intellectual spark that keeps things interesting.", desafio:"Neither of you has much patience for details or deep emotions. You can connect in the mind but disconnect in the heart if you don't work on that side of things.", potencial:"You're the couple that keeps each other stimulated, grows together, and never gets bored. Add emotional depth to your connection and you have everything you need to last.", consejo:"Don't run from hard or emotional conversations. The depth you're avoiding is exactly what will make the relationship stronger."},
+  "Fuego-Agua": {quimica:"The attraction is intense, almost magnetic, but the dynamic is complicated. Fire and water are drawn to each other precisely because they're opposites, and that tension can be exhilarating or exhausting depending on how you handle it.", desafio:"Fire might feel like water is too emotional or demanding; water might feel like fire is insensitive or selfish. Neither of you naturally understands the other.", potencial:"If you take the time to understand how the other one works, you can have an incredibly deep connection. Fire gives water energy; water gives fire emotional depth.", consejo:"Before reacting, ask yourselves what the other person needs right now — not what you would need in their place. That distinction changes everything."},
+  "Tierra-Tierra": {quimica:"There's a natural understanding between you. You share similar values, similar paces, and a way of seeing life that makes being together feel safe and comfortable.", desafio:"The risk is stagnation. Two earth signs can fall into routines so stable they lose the spark and stop growing. Comfort turns into complacency if you're not careful.", potencial:"You're the couple with the most potential to build something solid and lasting. The stability you offer each other is a powerful foundation for a life together.", consejo:"Plan adventures, challenges, or periodic changes to your routine. Stability is an asset; boredom is a threat you can prevent."},
+  "Tierra-Aire": {quimica:"You're quite different in how you see life, and that can be fascinating at first. Earth admires air's mind; air admires earth's groundedness.", desafio:"Earth might feel like air is inconsistent or uncommitted; air might feel like earth is too rigid or resistant to change. You'll need a lot of communication.", potencial:"If you respect each other's differences, you can complement each other very well. Earth gives air roots; air gives earth perspective and movement.", consejo:"Accept that the other person has a different kind of intelligence than yours, not a lesser one. That's what makes the relationship enriching."},
+  "Tierra-Agua": {quimica:"This combination has a natural harmony. Earth holds water and gives it shape; water nourishes earth and makes it fertile. You understand each other emotionally more than you realize.", desafio:"Water can overflow emotionally more than earth can handle; earth can come across as cold or distant when water needs more emotional support.", potencial:"You're one of the most compatible combinations in the zodiac. You share values of security, loyalty, and depth. With communication, you can build something very solid.", consejo:"Earth: express what you feel even if you don't have the perfect words. Water: give earth space to process — not everything has to happen immediately."},
+  "Aire-Aire": {quimica:"The mental connection is instant and powerful. You speak the same language, understand each other effortlessly, and conversation can go on for hours without either of you getting bored.", desafio:"Two air signs can stay stuck in their heads and never land on anything concrete. Decisions get postponed, commitments get avoided, and the relationship can feel like endless possibility without anything real.", potencial:"If you add concrete action to all those brilliant ideas, you're an extraordinary couple — with arguably the sharpest minds of any combination in the zodiac.", consejo:"Set actual dates and commitments. Ideas without action are just conversation. Love needs to land somewhere real too."},
+  "Aire-Agua": {quimica:"You're drawn to each other because you feel incomplete without what the other has in abundance. Water gives air emotional depth; air gives water perspective and lightness.", desafio:"Air might feel like water is too intense or emotionally demanding; water might feel like air is shallow or uncommitted to what they're feeling.", potencial:"If you learn to value what the other brings, you can have a very complete connection — mind and heart in balance. That's the dream for both of you, even if you don't realize it.", consejo:"Air: take water's emotions more seriously, even when you don't fully understand them. Water: trust that air loves you even if they don't show it the way you'd expect."},
+  "Agua-Agua": {quimica:"The emotional connection is deep and immediate. You understand each other without words, feel what the other feels, and share a natural intimacy that few combinations have.", desafio:"Two water signs can drown each other. If you're both struggling at the same time, there's no one to hold steady ground. Codependency is the biggest risk in this combination.", potencial:"If you keep your individuality within the depth you share, you can have one of the most intimate and meaningful connections in the zodiac.", consejo:"Make sure you both have friends, hobbies, and interests outside the relationship. Love can't be the only anchor for either of you."},
+};
+
+function getCompatText(s1, s2, name1, name2, language) {
   const e1=ELEM[s1]||"Fuego", e2=ELEM[s2]||"Fuego";
   const key1=`${e1}-${e2}`, key2=`${e2}-${e1}`;
-  let texts = COMPAT_TEXTS[key1];
+  const TABLE = language === "en" ? COMPAT_TEXTS_EN : COMPAT_TEXTS;
+  let texts = TABLE[key1];
   let swapped = false;
-  if (!texts) { texts = COMPAT_TEXTS[key2]; swapped = true; }
-  if (!texts) texts = COMPAT_TEXTS["Fuego-Fuego"];
+  if (!texts) { texts = TABLE[key2]; swapped = true; }
+  if (!texts) texts = TABLE["Fuego-Fuego"];
 
   // Si tenemos nombres reales, reemplazamos "Aire:"/"Agua:" etc por los nombres de cada persona.
   // IMPORTANTE: elemForS1 siempre es el elemento REAL de la persona 1 (e1), y elemForS2 el de
@@ -2030,6 +2129,19 @@ const PLANET_MEANING = {
   Plutón: "dónde vives transformaciones profundas",
 };
 
+const PLANET_MEANING_EN = {
+  Sol: "your essence and who you are at your core",
+  Luna: "your emotions and what you need to feel safe",
+  Mercurio: "how you think and communicate",
+  Venus: "how you love and what attracts you",
+  Marte: "your energy, desire, and how you take action",
+  Júpiter: "where you find luck and growth",
+  Saturno: "your responsibilities and where you mature through effort",
+  Urano: "where you break rules and seek freedom",
+  Neptuno: "your dreams, intuition, and spirituality",
+  Plutón: "where you live out deep transformations",
+};
+
 // Explicación corta de cada casa, en lenguaje simple
 const HOUSE_SIMPLE = [
   "tu personalidad y cómo te presentas al mundo",
@@ -2046,6 +2158,21 @@ const HOUSE_SIMPLE = [
   "tu mundo espiritual e interior, lo que procesas en soledad",
 ];
 
+const HOUSE_SIMPLE_EN = [
+  "your personality and how you present yourself to the world",
+  "your money, your values, and what you consider important",
+  "how you communicate and your close circle (siblings, neighbors)",
+  "your home, your family, and your roots",
+  "romance, creativity, and children",
+  "your daily work, routines, and health",
+  "your romantic relationships and partnerships",
+  "deep intimacy, what's shared, and transformation",
+  "travel, higher education, and your philosophy of life",
+  "your career and public reputation",
+  "your friendships and the groups you belong to",
+  "your spiritual and inner world, what you process in solitude",
+];
+
 // Significado simple de cada tipo de aspecto
 const ASPECT_SIMPLE = {
   "Conjunción": "estos dos planetas trabajan juntos como uno solo — fusionan su energía",
@@ -2055,15 +2182,32 @@ const ASPECT_SIMPLE = {
   "Oposición": "tiran en direcciones opuestas — buscan equilibrio entre dos extremos",
 };
 
+const ASPECT_SIMPLE_EN = {
+  "Conjunción": "these two planets work together as one — they fuse their energy",
+  "Trígono": "they flow easily together — it's a natural talent",
+  "Sextil": "they support each other once you consciously activate them",
+  "Cuadratura": "they create tension and friction — a challenge that helps you grow",
+  "Oposición": "they pull in opposite directions — seeking balance between two extremes",
+};
+
 function CartaNatal({chart,transits,transitAspects}){
-  const{t}=useLanguage();
+  const{t,language}=useLanguage();
+  const isEn = language === "en";
+  const PMEAN = isEn ? PLANET_MEANING_EN : PLANET_MEANING;
+  const HSIMP = isEn ? HOUSE_SIMPLE_EN : HOUSE_SIMPLE;
+  const ASIMP = isEn ? ASPECT_SIMPLE_EN : ASPECT_SIMPLE;
   const[sec,setSec]=useState("planetas");
   const PC={Sol:C.gold,Luna:C.cyan,Mercurio:C.warn,Venus:C.pink,Marte:C.danger,Júpiter:C.violet,Saturno:C.teal,Urano:C.teal,Neptuno:C.violet,Plutón:C.muted};
   const HM=["Personalidad, apariencia","Dinero, valores","Comunicación, mente","Hogar, familia","Creatividad, romance","Salud, trabajo","Relaciones, matrimonio","Transformación, intimidad","Filosofía, viajes","Carrera, reputación","Amigos, grupos","Espiritualidad, karma"];
   const[expandedPlanet,setExpandedPlanet]=useState(null);
   const[expandedAspect,setExpandedAspect]=useState(null);
 
-  const SEC_INTRO = {
+  const SEC_INTRO = isEn ? {
+    planetas: "Planets represent different parts of you — they're not people, they're energies. The Sun, for example, is your essence and the Moon is your emotions. The sign says HOW that energy expresses itself, and the House says in WHAT AREA of your life.",
+    casas: "Your chart is divided into 12 \"houses,\" like the rooms of your life: one is money, another is love, another is work, and so on. The sign in each house shows the style you bring to that area.",
+    aspectos: "An aspect is the angle two planets form with each other in your chart. Depending on that angle, the planets help each other, clash, or merge — like two characters of your personality interacting.",
+    transitos: "Planets keep moving across the sky every day (that's what \"transits\" are). When today's planet forms an angle with a planet in your natal chart, it activates that energy in your current life.",
+  } : {
     planetas: "Los planetas muestran distintas partes de ti — no son personas, son energías. Por ejemplo el Sol es tu esencia y la Luna tus emociones. El signo dice CÓMO se expresa esa energía, y la Casa dice EN QUÉ ÁREA de tu vida.",
     casas: "Tu carta se divide en 12 \"casas\", como las habitaciones de tu vida: una es el dinero, otra el amor, otra el trabajo, etc. El signo en cada casa muestra el estilo con el que vives esa área.",
     aspectos: "Un aspecto es el ángulo que forman dos planetas entre sí en tu carta. Según ese ángulo, los planetas se ayudan, chocan o se fusionan — como dos personajes de tu personalidad interactuando.",
@@ -2107,7 +2251,13 @@ function CartaNatal({chart,transits,transitAspects}){
           </div>
           {isOpen&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
             <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
-              <strong style={{color:PC[name]}}>{name}</strong> representa {PLANET_MEANING[name]}. En tu carta está en <strong style={{color:C.white}}>{data.sign}</strong>, así que esa energía se expresa con el estilo de {data.sign}. Y cae en tu <strong style={{color:C.white}}>Casa {data.house}</strong>, el área de {HOUSE_SIMPLE[data.house-1]}.
+              {isEn
+                ? <>
+                    <strong style={{color:PC[name]}}>{name}</strong> represents {PMEAN[name]}. In your chart it's in <strong style={{color:C.white}}>{data.sign}</strong>, so that energy expresses itself in the style of {data.sign}. And it falls in your <strong style={{color:C.white}}>House {data.house}</strong>, the area of {HSIMP[data.house-1]}.
+                  </>
+                : <>
+                    <strong style={{color:PC[name]}}>{name}</strong> representa {PMEAN[name]}. En tu carta está en <strong style={{color:C.white}}>{data.sign}</strong>, así que esa energía se expresa con el estilo de {data.sign}. Y cae en tu <strong style={{color:C.white}}>Casa {data.house}</strong>, el área de {HSIMP[data.house-1]}.
+                  </>}
             </p>
           </div>}
         </div>;
@@ -2119,7 +2269,9 @@ function CartaNatal({chart,transits,transitAspects}){
           <div style={{fontSize:12,color:C.muted}}>{expandedPlanet==="Lilith"?"▾":"▸"}</div>
         </div>
         {expandedPlanet==="Lilith"&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
-          <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>Lilith no es un planeta real sino un punto matemático: representa tu lado más instintivo, salvaje y a veces tabú — lo que la sociedad te pidió reprimir. En <strong style={{color:C.white}}>{chart.lilithSign}</strong> (Casa {chart.lilithHouse}), esa energía reprimida busca expresarse en el área de {HOUSE_SIMPLE[chart.lilithHouse-1]}.</p>
+          <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>{isEn
+            ? <>Lilith isn't a real planet but a mathematical point: it represents your most instinctive, wild, and sometimes taboo side — what society asked you to repress. In <strong style={{color:C.white}}>{chart.lilithSign}</strong> (House {chart.lilithHouse}), that repressed energy seeks to express itself in the area of {HSIMP[chart.lilithHouse-1]}.</>
+            : <>Lilith no es un planeta real sino un punto matemático: representa tu lado más instintivo, salvaje y a veces tabú — lo que la sociedad te pidió reprimir. En <strong style={{color:C.white}}>{chart.lilithSign}</strong> (Casa {chart.lilithHouse}), esa energía reprimida busca expresarse en el área de {HSIMP[chart.lilithHouse-1]}.</>}</p>
         </div>}
       </div>
     </div>}
@@ -2128,7 +2280,7 @@ function CartaNatal({chart,transits,transitAspects}){
       {chart.cusps.map((cusp,i)=>{const planetsHere=Object.entries(chart.planets).filter(([,d])=>d.house===i+1).map(([n])=>n);
         return <Card key={i} style={{padding:12}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}><div style={{fontSize:10,color:C.gold,fontWeight:700}}>{t("cartaHouse",{n:i+1}).toUpperCase()}</div><div style={{fontSize:13,color:C.white,fontWeight:700}}>{signOf(cusp)}</div></div>
-          <div style={{fontSize:10,color:C.muted,lineHeight:1.4,marginBottom:planetsHere.length?6:0}}>{HOUSE_SIMPLE[i]}</div>
+          <div style={{fontSize:10,color:C.muted,lineHeight:1.4,marginBottom:planetsHere.length?6:0}}>{HSIMP[i]}</div>
           {planetsHere.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{planetsHere.map(p=><Pill key={p} color={PC[p]||C.muted} style={{fontSize:9,padding:"1px 6px"}}>{p}</Pill>)}</div>}
         </Card>;
       })}
@@ -2147,7 +2299,9 @@ function CartaNatal({chart,transits,transitAspects}){
             </div>
             {isOpen&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
               <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
-                Esta es una <strong style={{color:C.white}}>{asp.name}</strong>: {ASPECT_SIMPLE[asp.name]}. En este caso es entre <strong style={{color:PC[asp.p1]}}>{asp.p1}</strong> ({PLANET_MEANING[asp.p1]}) y <strong style={{color:PC[asp.p2]}}>{asp.p2}</strong> ({PLANET_MEANING[asp.p2]}).
+                {isEn
+                  ? <>This is a <strong style={{color:C.white}}>{asp.name}</strong>: {ASIMP[asp.name]}. In this case it's between <strong style={{color:PC[asp.p1]}}>{asp.p1}</strong> ({PMEAN[asp.p1]}) and <strong style={{color:PC[asp.p2]}}>{asp.p2}</strong> ({PMEAN[asp.p2]}).</>
+                  : <>Esta es una <strong style={{color:C.white}}>{asp.name}</strong>: {ASIMP[asp.name]}. En este caso es entre <strong style={{color:PC[asp.p1]}}>{asp.p1}</strong> ({PMEAN[asp.p1]}) y <strong style={{color:PC[asp.p2]}}>{asp.p2}</strong> ({PMEAN[asp.p2]}).</>}
               </p>
             </div>}
           </div>;
@@ -2164,7 +2318,9 @@ function CartaNatal({chart,transits,transitAspects}){
             <div style={{fontSize:11,color:C.muted}}>{asp.name} · {asp.transit} en {asp.transitSign} {asp.transitDeg}°</div>
             {isOpen&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
               <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
-                Hoy, el <strong style={{color:C.white}}>{asp.transit}</strong> que está en el cielo ahora mismo forma una <strong style={{color:C.white}}>{asp.name}</strong> con tu <strong style={{color:C.white}}>{asp.natal} natal</strong> ({PLANET_MEANING[asp.natal]}). {ASPECT_SIMPLE[asp.name]}. Esto está activando esa parte de tu carta en este momento de tu vida.
+                {isEn
+                  ? <>Today, the <strong style={{color:C.white}}>{asp.transit}</strong> currently in the sky forms a <strong style={{color:C.white}}>{asp.name}</strong> with your natal <strong style={{color:C.white}}>{asp.natal}</strong> ({PMEAN[asp.natal]}). {ASIMP[asp.name]}. This is activating that part of your chart right now in your life.</>
+                  : <>Hoy, el <strong style={{color:C.white}}>{asp.transit}</strong> que está en el cielo ahora mismo forma una <strong style={{color:C.white}}>{asp.name}</strong> con tu <strong style={{color:C.white}}>{asp.natal} natal</strong> ({PMEAN[asp.natal]}). {ASIMP[asp.name]}. Esto está activando esa parte de tu carta en este momento de tu vida.</>}
               </p>
             </div>}
           </div>;
@@ -2180,11 +2336,11 @@ function CartaNatal({chart,transits,transitAspects}){
 
 // ── TAROT VIEW ───────────────────────────────────────────
 function TarotView(){
-  const{t:tr}=useLanguage();
+  const{t:tr,language}=useLanguage();
   const[cards,setCards]=useState(null);
   const[intent,setIntent]=useState("");
   const[revealed,setRevealed]=useState([false,false,false]);
-  function draw(){setCards(drawTarot());setRevealed([false,false,false]);}
+  function draw(){setCards(drawTarot(language));setRevealed([false,false,false]);}
   function reveal(i){setRevealed(r=>{const n=[...r];n[i]=true;return n;});}
   const POSKEYS=["tarotPast","tarotPresent","tarotFuture"];
   const POS=POSKEYS.map(k=>tr(k));
@@ -2269,7 +2425,7 @@ function CompatibleSignsView({chart,profile,onBack}){
 
 // ── SINASTRÍA / AMOR VIEW ────────────────────────────────
 function AmorView({myChart,myProfile,loggedEmail}){
-  const{t}=useLanguage();
+  const{t,language}=useLanguage();
   const[mode,setMode]=useState(null);
   const[mySign,setMySign]=useState(myChart?signOf(myChart.planets.Sol.lon):null);
   const[theirSign,setTheirSign]=useState(null);
@@ -2294,7 +2450,7 @@ function AmorView({myChart,myProfile,loggedEmail}){
   function calcSignCompat(signA, signB){
     const s1=signA||mySign, s2=signB||theirSign;
     const score=Math.min(97,Math.max(32,(COMPAT_MATRIX[ELEM[s1]]?.[ELEM[s2]]||60)+Math.floor(Math.random()*16)-8));
-    const texts=getCompatText(s1,s2);
+    const texts=getCompatText(s1,s2,undefined,undefined,language);
     setResult({score,type:"sign",s1,s2,texts});
   }
   async function calcChartCompat(){
@@ -2307,7 +2463,7 @@ function AmorView({myChart,myProfile,loggedEmail}){
       const score=Math.min(97,Math.max(32,(COMPAT_MATRIX[ELEM[s1]]?.[ELEM[s2]]||60)+Math.floor(Math.random()*18)-9));
       const ias=[];for(const[pA,dA]of Object.entries(myChart.planets))for(const[pB,dB]of Object.entries(tc.planets)){const a=findAspect(dA.lon,dB.lon);if(a&&a.type!=="minor")ias.push({pA,pB,...a});}
       const top=ias.sort((a,b)=>parseFloat(a.exact)-parseFloat(b.exact)).slice(0,5);
-      const texts=getCompatText(s1,s2,myProfile?.name,theirForm.name);
+      const texts=getCompatText(s1,s2,myProfile?.name,theirForm.name,language);
       setResult({score,type:"chart",s1,s2,theirName:theirForm.name,theirChart:tc,interAspects:top,texts});
       // Guardar o actualizar la persona en Supabase. Si venimos de "editar" (_editId presente),
       // actualizamos ESE registro exacto. Si no, usamos upsert por nombre para evitar duplicados.
@@ -2566,7 +2722,7 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
 
 // ── APP PRINCIPAL ─────────────────────────────────────────
 function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
-  const{t:tr}=useLanguage();
+  const{t:tr,language}=useLanguage();
   const[tab,setTab]=useState("inicio");
   const[profile,setProfile]=useState(null);
   const[chart,setChart]=useState(null);
@@ -2610,9 +2766,9 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
   useEffect(()=>{
     if(!transits)return;
     // Generar oráculo del día (sin API)
-    const o=getOracleForToday(chart,transits);
+    const o=getOracleForToday(chart,transits,language);
     setOracle(o);
-  },[transits,chart]);
+  },[transits,chart,language]);
 
   async function saveProfile(p){
     setCalcMsg(tr("appCalculatingChart"));
@@ -2639,7 +2795,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
       }
 
       setProfile({...p});setChart(newChart);setTransits(newTransits);setTransitAspects(newTA);
-      const newOracle=getOracleForToday(newChart,newTransits);setOracle(newOracle);
+      const newOracle=getOracleForToday(newChart,newTransits,language);setOracle(newOracle);
       setShowProfile(false);setCalcMsg("");setTab("carta");
     }catch(e){
       console.error(e);
@@ -2651,7 +2807,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
     if(saveError){
       setProfile({...saveError.pendingProfile});setChart(saveError.pendingChart);
       setTransits(saveError.pendingTransits);setTransitAspects(saveError.pendingTA);
-      const newOracle=getOracleForToday(saveError.pendingChart,saveError.pendingTransits);setOracle(newOracle);
+      const newOracle=getOracleForToday(saveError.pendingChart,saveError.pendingTransits,language);setOracle(newOracle);
       setSaveError(null);setShowProfile(false);setTab("carta");
     }
   }
@@ -2908,9 +3064,160 @@ const SIGN_INFO = {
   },
 };
 
+// rulerKey keeps the Spanish planet name (first word) so PLANET_SYMBOLS[...] lookups keep working;
+// rulerDisplay is what's actually shown to English-reading users.
+const SIGN_INFO_EN = {
+  Aries: {
+    dates: "Mar 21 – Apr 19", element: "Fire", elementEmoji: "🔥",
+    ruler: "Marte", rulerDisplay: "Mars", rulerWhy: "the planet of action, energy, and courage",
+    color: "Red", colorHex: "#e04060", polarity: "Masculine / Active",
+    modality: "Cardinal (initiates)", bodyPart: "Head",
+    keyword: "\"I am\"",
+    traits: ["Brave and direct", "Loves starting new things", "Impatient but honest", "Natural-born leader", "Competitive"],
+    strengths: "Courage, initiative, honesty, the energy to start what others don't dare to.",
+    challenges: "Can be impulsive, impatient, or selfish when things don't move fast enough.",
+    loveStyle: "Loves intensely and fast. Needs a partner who can keep up and won't bore them.",
+    compatible: ["Leo", "Sagitario", "Géminis", "Acuario"],
+  },
+  Tauro: {
+    dates: "Apr 20 – May 20", element: "Earth", elementEmoji: "🌍",
+    ruler: "Venus", rulerDisplay: "Venus", rulerWhy: "the planet of love, beauty, and pleasure",
+    color: "Green / Pink", colorHex: "#30d0b0", polarity: "Feminine / Receptive",
+    modality: "Fixed (sustains)", bodyPart: "Neck and throat",
+    keyword: "\"I have\"",
+    traits: ["Stable and reliable", "Enjoys pleasure and comfort", "Stubborn but loyal", "Patient", "Sensory"],
+    strengths: "Loyalty, patience, an appreciation for beauty, the ability to build things that last.",
+    challenges: "Can be stubborn, resistant to change, or overly possessive.",
+    loveStyle: "Loves slowly but forever. Needs stability and physical gestures of affection.",
+    compatible: ["Virgo", "Capricornio", "Cáncer", "Piscis"],
+  },
+  Géminis: {
+    dates: "May 21 – Jun 20", element: "Air", elementEmoji: "💨",
+    ruler: "Mercurio", rulerDisplay: "Mercury", rulerWhy: "the planet of communication, the mind, and learning",
+    color: "Yellow", colorHex: "#f0c040", polarity: "Masculine / Active",
+    modality: "Mutable (adapts)", bodyPart: "Arms and lungs",
+    keyword: "\"I think\"",
+    traits: ["Curious and chatty", "Loves learning about everything", "Sociable", "Changes their mind easily", "Witty"],
+    strengths: "Quick intelligence, versatility, great communication skills, and adaptability.",
+    challenges: "Can be scattered, inconsistent, or speak before thinking things through.",
+    loveStyle: "Needs mental stimulation. Falls for the conversation as much as for the person.",
+    compatible: ["Libra", "Acuario", "Aries", "Leo"],
+  },
+  Cáncer: {
+    dates: "Jun 21 – Jul 22", element: "Water", elementEmoji: "💧",
+    ruler: "Luna", rulerDisplay: "the Moon", rulerWhy: "the celestial body of emotions, intuition, and home",
+    color: "Silver / White", colorHex: "#9b6dff", polarity: "Feminine / Receptive",
+    modality: "Cardinal (initiates)", bodyPart: "Chest and stomach",
+    keyword: "\"I feel\"",
+    traits: ["Protective and nurturing", "Highly intuitive", "Attached to family", "Sensitive", "Strong emotional memory"],
+    strengths: "Deep empathy, loyalty, the ability to care for others and create a sense of home.",
+    challenges: "Can be touchy, withdrawn, or hold onto old grudges.",
+    loveStyle: "Loves with their whole heart and needs to feel emotionally safe before opening up.",
+    compatible: ["Escorpio", "Piscis", "Tauro", "Virgo"],
+  },
+  Leo: {
+    dates: "Jul 23 – Aug 22", element: "Fire", elementEmoji: "🔥",
+    ruler: "Sol", rulerDisplay: "the Sun", rulerWhy: "the center of the solar system, a symbol of identity and vitality",
+    color: "Gold / Orange", colorHex: "#f0c040", polarity: "Masculine / Active",
+    modality: "Fixed (sustains)", bodyPart: "Heart and back",
+    keyword: "\"I shine\"",
+    traits: ["Generous and charismatic", "Likes being the center of attention", "Proud", "Creative", "Fiercely loyal to their own"],
+    strengths: "Natural charisma, generosity, warmth, the ability to inspire others.",
+    challenges: "Can be prideful, dramatic, or need too much outside validation.",
+    loveStyle: "Loves intensely and generously. Needs admiration and recognition from their partner.",
+    compatible: ["Aries", "Sagitario", "Géminis", "Libra"],
+  },
+  Virgo: {
+    dates: "Aug 23 – Sep 22", element: "Earth", elementEmoji: "🌍",
+    ruler: "Mercurio", rulerDisplay: "Mercury", rulerWhy: "the planet of analysis, detail, and mental order",
+    color: "Olive green / Brown", colorHex: "#30d0b0", polarity: "Feminine / Receptive",
+    modality: "Mutable (adapts)", bodyPart: "Digestive system",
+    keyword: "\"I analyze\"",
+    traits: ["Perfectionist and helpful", "Highly organized", "Observant", "Practical", "Critical (of themselves too)"],
+    strengths: "Attention to detail, the ability to improve anything, quiet loyalty.",
+    challenges: "Can be overly self-demanding, critical, or anxious about control.",
+    loveStyle: "Shows love through acts of service. Needs to feel useful and appreciated in small ways.",
+    compatible: ["Tauro", "Capricornio", "Cáncer", "Escorpio"],
+  },
+  Libra: {
+    dates: "Sep 23 – Oct 22", element: "Air", elementEmoji: "💨",
+    ruler: "Venus", rulerDisplay: "Venus", rulerWhy: "the planet of harmony, relationships, and beauty",
+    color: "Pastel pink / Sky blue", colorHex: "#e056a0", polarity: "Masculine / Active",
+    modality: "Cardinal (initiates)", bodyPart: "Kidneys and skin",
+    keyword: "\"I balance\"",
+    traits: ["Diplomatic and charming", "Seeks harmony", "Indecisive", "Sociable", "Lover of beauty and fairness"],
+    strengths: "Diplomacy, a strong sense of justice, natural charm, the ability to mediate conflict.",
+    challenges: "Can be indecisive, dependent on others' approval, or avoid necessary conflict.",
+    loveStyle: "Needs a partner to feel complete. Loves with elegance and constantly seeks balance.",
+    compatible: ["Géminis", "Acuario", "Leo", "Sagitario"],
+  },
+  Escorpio: {
+    dates: "Oct 23 – Nov 21", element: "Water", elementEmoji: "💧",
+    ruler: "Plutón (y Marte)", rulerDisplay: "Pluto (and Mars)", rulerWhy: "the planet of deep transformation and hidden power",
+    color: "Dark red / Black", colorHex: "#e04060", polarity: "Feminine / Receptive",
+    modality: "Fixed (sustains)", bodyPart: "Reproductive organs",
+    keyword: "\"I transform\"",
+    traits: ["Intense and mysterious", "Deeply loyal", "Passionate", "Perceptive", "Doesn't forget betrayals"],
+    strengths: "Emotional depth, extreme loyalty, the ability to regenerate after any crisis.",
+    challenges: "Can be jealous, controlling, or hold onto resentment for a long time.",
+    loveStyle: "Loves with total intensity — all or nothing. Needs absolute trust and deep connection.",
+    compatible: ["Cáncer", "Piscis", "Virgo", "Capricornio"],
+  },
+  Sagitario: {
+    dates: "Nov 22 – Dec 21", element: "Fire", elementEmoji: "🔥",
+    ruler: "Júpiter", rulerDisplay: "Jupiter", rulerWhy: "the planet of expansion, luck, and life philosophy",
+    color: "Purple / Blue", colorHex: "#9b6dff", polarity: "Masculine / Active",
+    modality: "Mutable (adapts)", bodyPart: "Hips and thighs",
+    keyword: "\"I explore\"",
+    traits: ["Adventurous and optimistic", "Loves freedom", "Philosophical", "Bluntly honest", "Restless"],
+    strengths: "Contagious optimism, an open mind, a love of learning and exploring the world.",
+    challenges: "Can be irresponsible, overpromise, or avoid commitment out of fear of losing freedom.",
+    loveStyle: "Needs space and adventure. Loves whoever lets them be free while still being their companion.",
+    compatible: ["Aries", "Leo", "Libra", "Acuario"],
+  },
+  Capricornio: {
+    dates: "Dec 22 – Jan 19", element: "Earth", elementEmoji: "🌍",
+    ruler: "Saturno", rulerDisplay: "Saturn", rulerWhy: "the planet of discipline, structure, and responsibility",
+    color: "Gray / Black", colorHex: "#9080b0", polarity: "Feminine / Receptive",
+    modality: "Cardinal (initiates)", bodyPart: "Bones and knees",
+    keyword: "\"I build\"",
+    traits: ["Disciplined and ambitious", "Tireless worker", "Reserved", "Responsible", "Matures quickly"],
+    strengths: "Determination, long-term patience, the ability to achieve big goals through sustained effort.",
+    challenges: "Can come across as cold, become a workaholic, or be too hard on themselves.",
+    loveStyle: "Loves seriously and with commitment. Takes time to open up, but when they do, it's for good.",
+    compatible: ["Tauro", "Virgo", "Escorpio", "Piscis"],
+  },
+  Acuario: {
+    dates: "Jan 20 – Feb 18", element: "Air", elementEmoji: "💨",
+    ruler: "Urano (y Saturno)", rulerDisplay: "Uranus (and Saturn)", rulerWhy: "the planet of innovation, rebellion, and sudden change",
+    color: "Electric blue / Turquoise", colorHex: "#40c8f0", polarity: "Masculine / Active",
+    modality: "Fixed (sustains)", bodyPart: "Ankles and circulation",
+    keyword: "\"I innovate\"",
+    traits: ["Original and independent", "Visionary", "Humanitarian", "Sometimes emotionally detached", "Rebellious"],
+    strengths: "Originality, innovative thinking, genuine commitment to collective causes.",
+    challenges: "Can be emotionally distant, stubborn about their ideas, or unpredictable.",
+    loveStyle: "Loves through friendship and the mind. Needs space and freedom even within a relationship.",
+    compatible: ["Géminis", "Libra", "Aries", "Sagitario"],
+  },
+  Piscis: {
+    dates: "Feb 19 – Mar 20", element: "Water", elementEmoji: "💧",
+    ruler: "Neptuno (y Júpiter)", rulerDisplay: "Neptune (and Jupiter)", rulerWhy: "the planet of dreams, spirituality, and imagination",
+    color: "Sea green / Lilac", colorHex: "#9b6dff", polarity: "Feminine / Receptive",
+    modality: "Mutable (adapts)", bodyPart: "Feet",
+    keyword: "\"I believe\"",
+    traits: ["Dreamy and compassionate", "Highly intuitive", "Artistic", "Extremely empathetic", "Sometimes evasive"],
+    strengths: "Deep empathy, creativity, spiritual connection, the ability to heal others.",
+    challenges: "Can get lost in fantasy, be overly accommodating, or absorb other people's pain.",
+    loveStyle: "Loves unconditionally and romantically. Needs a partner who understands their sensitive inner world.",
+    compatible: ["Cáncer", "Escorpio", "Tauro", "Capricornio"],
+  },
+};
+
 function SignDetailView({ signName, onBack }) {
-  const { t } = useLanguage();
-  const info = SIGN_INFO[signName];
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+  const info = (isEn ? SIGN_INFO_EN : SIGN_INFO)[signName];
+  const rulerDisplay = isEn ? (info.rulerDisplay || info.ruler) : info.ruler;
   const sign = SIGNS_LIST.find(s => s.name === signName);
   return (
     <div style={{padding:16}}>
@@ -2925,14 +3232,14 @@ function SignDetailView({ signName, onBack }) {
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
         <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{info.elementEmoji}</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailElement")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.element}</div></Card>
-        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{PLANET_SYMBOLS[info.ruler.split(" ")[0]]||"🪐"}</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailRulerPlanet")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.ruler}</div></Card>
+        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{PLANET_SYMBOLS[info.ruler.split(" ")[0]]||"🪐"}</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailRulerPlanet")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{rulerDisplay}</div></Card>
         <Card style={{padding:12,textAlign:"center"}}><div style={{width:20,height:20,borderRadius:"50%",background:info.colorHex,margin:"0 auto 4px"}} /><div style={{fontSize:10,color:C.muted}}>{t("signDetailColor")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.color}</div></Card>
         <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>⚖️</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailModality")}</div><div style={{fontSize:12,fontWeight:700,color:C.white}}>{info.modality}</div></Card>
       </div>
 
       <Card style={{marginBottom:12}}>
-        <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>{t("signDetailWhyTitle",{ruler:info.ruler.split(" ")[0].toUpperCase()})}</div>
-        <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{t("signDetailWhyBody",{sign:signName,ruler:info.ruler,rulerWhy:info.rulerWhy})}</p>
+        <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>{t("signDetailWhyTitle",{ruler:rulerDisplay.toUpperCase()})}</div>
+        <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{t("signDetailWhyBody",{sign:signName,ruler:rulerDisplay,rulerWhy:info.rulerWhy})}</p>
       </Card>
 
       <Card style={{marginBottom:12}}>
@@ -2968,7 +3275,9 @@ function SignDetailView({ signName, onBack }) {
 }
 
 function SignosListView() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isEn = language === "en";
+  const TABLE = isEn ? SIGN_INFO_EN : SIGN_INFO;
   const [selected, setSelected] = useState(null);
   if (selected) return <SignDetailView signName={selected} onBack={()=>setSelected(null)} />;
   return (
@@ -2976,12 +3285,13 @@ function SignosListView() {
       <p style={{color:C.muted,fontSize:12,marginBottom:14,lineHeight:1.5}}>{t("signosListHint")}</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:8}}>
         {SIGNS_LIST.map((sign)=>{
-          const info = SIGN_INFO[sign.name];
+          const info = TABLE[sign.name];
+          const rulerDisplay = isEn ? (info.rulerDisplay || info.ruler) : info.ruler;
           return <div key={sign.name} onClick={()=>setSelected(sign.name)}
             style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,cursor:"pointer"}}
             onMouseEnter={e=>e.currentTarget.style.borderColor=sign.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><span style={{fontSize:28}}>{sign.glyph}</span><div><div style={{fontSize:14,fontWeight:700,color:sign.color}}>{sign.name}</div><div style={{fontSize:10,color:C.muted}}>{info.dates}</div></div></div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}><Pill color={sign.color} style={{fontSize:9}}>{info.elementEmoji} {info.element}</Pill><Pill color={C.muted} style={{fontSize:9}}>{info.ruler.split(" ")[0]}</Pill></div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}><Pill color={sign.color} style={{fontSize:9}}>{info.elementEmoji} {info.element}</Pill><Pill color={C.muted} style={{fontSize:9}}>{rulerDisplay.split(" ")[0]}</Pill></div>
             <div style={{fontSize:10,color:C.muted,fontStyle:"italic"}}>{info.keyword}</div>
           </div>;
         })}
