@@ -40,8 +40,11 @@ async function sendMetaPurchaseEvent(email: string, value: number, currency: str
       body: JSON.stringify(body),
     },
   );
+  const resultText = await r.text();
   if (!r.ok) {
-    console.error("Meta CAPI error:", await r.text());
+    console.error("Meta CAPI error:", resultText);
+  } else {
+    console.log("Meta CAPI ok:", resultText);
   }
 }
 
