@@ -2682,6 +2682,7 @@ function AmorView({myChart,myProfile,loggedEmail}){
 function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
   const{t}=useLanguage();
   const[loadingPortal,setLoadingPortal]=useState(false);
+  const[showContact,setShowContact]=useState(false);
   const[portalError,setPortalError]=useState("");
 
   async function openPlanPortal(){
@@ -2723,11 +2724,13 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
         <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>{t("settingsMyAccount")}</h3>
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
           <Row icon="💳" label={loadingPortal?t("settingsOpeningPortal"):t("settingsChangePlan")} onClick={loadingPortal?undefined:openPlanPortal} />
+          <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>setShowContact(v=>!v)} />
+          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>setShowContact(v=>!v)} />
         </div>
         {portalError&&<p style={{color:C.danger,fontSize:12,marginTop:8,lineHeight:1.5}}>{portalError}</p>}
-        <p style={{color:C.muted,fontSize:12,marginTop:10,lineHeight:1.5}}>
+        {showContact&&<p style={{color:C.muted,fontSize:12,marginTop:10,lineHeight:1.5}}>
           {t("settingsContactMessage")} <span style={{color:C_ACCESS.gold}}>atencionalcoientem@gmail.com</span>
-        </p>
+        </p>}
       </div>
 
       <div style={{padding:"16px 16px 32px"}}>
