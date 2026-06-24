@@ -1,4 +1,536 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext, createContext } from "react";
+
+// ── TRANSLATIONS (UI chrome only — pregenerated astrological content stays in Spanish) ──
+const TRANSLATIONS = {
+  es: {
+    loginInvalidEmail: "Por favor ingresa un email válido.",
+    loginNoAccess: "Este email no tiene acceso a Cosmicall. Si ya compraste tu acceso, contacta a atencionalcoientem@gmail.com",
+    loginConnError: "Error de conexión. Intenta de nuevo.",
+    loginVerifying: "Verificando acceso…",
+    loginTitleApp: "Cosmicall",
+    loginSubtitle: "Tu guía astrológica personalizada",
+    loginCardTitle: "Ingresar a Cosmicall",
+    loginCardDesc: "Ingresa el email con el que compraste tu acceso.",
+    loginEmailLabel: "TU EMAIL",
+    loginEmailPlaceholder: "tu@email.com",
+    loginButtonVerifying: "Verificando…",
+    loginButtonEnter: "Entrar ✨",
+    loginNoAccessFooter: "¿No tienes acceso? Contáctanos en",
+
+    adminPanelTitle: "⚙️ Panel de Accesos",
+    adminActiveTotal: "{active} activos · {total} total",
+    adminAddNew: "➕ Dar acceso nuevo",
+    adminNamePlaceholder: "Nombre (opcional)",
+    adminEmailPlaceholder: "email@ejemplo.com *",
+    adminInvalidEmail: "⚠ Email inválido",
+    adminAccessGranted: "✅ Acceso dado correctamente",
+    adminAddError: "❌ Error al agregar. Puede que el email ya exista.",
+    adminSaving: "Guardando…",
+    adminGiveAccess: "Dar Acceso ✨",
+    adminSearchPlaceholder: "🔍 Buscar por nombre o email…",
+    adminLoading: "Cargando accesos…",
+    adminNoResults: "No se encontraron resultados",
+    adminNoAccesses: "Aún no hay accesos registrados",
+    adminNoName: "Sin nombre",
+    adminPause: "Pausar",
+    adminActivate: "Activar",
+    adminRemoveConfirm: "¿Quitar acceso a {email}?",
+
+    citySearchPlaceholder: "Escribe tu ciudad (ej: Cajicá, Mumbai…)",
+    citySearchNotFound: "No encontrada. Intenta con la ciudad principal más cercana.",
+
+    perfilFormTitle: "Tu Perfil Astral",
+    perfilFormSubtitle: "Para lecturas personalizadas con tu carta natal real",
+    perfilStep1Title: "¿Cómo te llamas?",
+    perfilNamePlaceholder: "Tu nombre completo",
+    perfilStep2Title: "Elige tu avatar",
+    perfilStep2Subtitle: "Así te vamos a saludar en la app",
+    perfilGenderMujer: "Mujer",
+    perfilGenderHombre: "Hombre",
+    perfilGenderNeutro: "Neutro",
+    perfilStep3Title: "Fecha y hora de nacimiento",
+    perfilDateLabel: "FECHA *",
+    perfilTimeLabel: "HORA *",
+    perfilTimeHint: "(si no la sabes, deja 12:00)",
+    perfilTimeNote: "💡 La hora exacta da el Ascendente y las 12 casas. Si naciste a mediodía exacto, usa el formato 24h: las 12 del mediodía son 12:00, no 00:00.",
+    perfilStep4Title: "Ciudad de nacimiento",
+    perfilBack: "← Atrás",
+    perfilContinue: "Continuar →",
+    perfilCalculate: "✨ Calcular mi carta natal",
+
+    settingsTitle: "Configuración",
+    settingsMyProfile: "Mi perfil",
+    settingsEditChart: "Editar mi carta natal",
+    settingsMyAccount: "Mi cuenta",
+    settingsChangePlan: "Cambiar plan o cancelar suscripción",
+    settingsOpeningPortal: "Abriendo gestión de plan…",
+    settingsHelpCenter: "Centro de ayuda",
+    settingsContactUs: "Contáctanos",
+    settingsPortalError: "No pudimos abrir la gestión de tu plan. Si el problema persiste, escríbenos a atencionalcoientem@gmail.com.",
+    settingsLogout: "Cerrar sesión",
+
+    appHeaderBrand: "Cosmicall",
+    appAdminButton: "⚙️ Accesos",
+    appMyChartButton: "Mi Carta ✨",
+    appSettingsAria: "Configuración",
+    appProfileModalTitle: "Perfil Astral",
+    appSaveErrorTitle: "No se pudo guardar en la nube",
+    appSaveErrorDesc: "Tu carta se calculó bien, pero el guardado falló. Copia este mensaje para revisarlo:",
+    appCopyError: "📋 Copiar error",
+    appContinue: "Continuar →",
+    appCalculatingChart: "Calculando tu carta natal con datos astronómicos precisos…",
+    appSavingProfile: "Guardando tu perfil…",
+    appCalcError: "⚠ Error al calcular la carta: {error}. Revisa tu conexión e intenta de nuevo.",
+    appActivateChart: "Activa tu carta natal",
+    appActivateChartDesc: "Para lecturas personalizadas",
+    appNatalChartTitle: "🌌 Tu Carta Natal",
+    appNatalChartCardTitle: "Carta Natal Personalizada",
+    appNatalChartCardDesc: "Ingresa tu fecha, hora y lugar de nacimiento para calcular tu carta natal real con los 10 planetas, 12 casas, Lilith y todos los aspectos.",
+    appCalculateChart: "Calcular mi Carta ✨",
+    appEdit: "Editar",
+    appNavInicio: "Inicio",
+    appNavCarta: "Carta",
+    appNavAmor: "Amor",
+    appNavTarot: "Tarot",
+    appNavMas: "Más",
+    appTileTarotLabel: "Tarot",
+    appTileTarotDesc: "Tirada de 3 cartas",
+    appTileMoreLabel: "Ver más",
+    appTileMoreDesc: "Luna, eventos, signos",
+
+    masSubLuna: "🌙 Luna",
+    masSubEventos: "📅 Eventos",
+    masSubPlanetas: "🪐 Planetas",
+    masSubSignos: "♈ Signos",
+    masPlanetPositionsTitle: "POSICIONES PLANETARIAS DE HOY",
+
+    signosListHint: "Toca cualquier signo para ver sus características completas, planeta regente, fortalezas y compatibilidades.",
+    signDetailBack: "← Volver a todos los signos",
+    signDetailElement: "ELEMENTO",
+    signDetailRulerPlanet: "PLANETA REGENTE",
+    signDetailColor: "COLOR",
+    signDetailModality: "MODALIDAD",
+    signDetailWhyTitle: "¿POR QUÉ {ruler}?",
+    signDetailWhyBody: "{sign} está regido por {ruler}, {rulerWhy}. Por eso esta energía marca tanto su forma de ser.",
+    signDetailTraitsTitle: "CARACTERÍSTICAS PRINCIPALES",
+    signDetailStrengths: "💪 FORTALEZAS",
+    signDetailChallenges: "⚡ DESAFÍOS",
+    signDetailLoveStyle: "💕 CÓMO AMA {sign}",
+    signDetailCompatible: "✨ MÁS COMPATIBLE CON",
+
+    amorTitle: "Amor & Compatibilidad",
+    amorSubtitle: "Elige cómo quieres explorar la compatibilidad. Empieza por la primera opción si no estás segura.",
+    amorStartHere: "EMPIEZA AQUÍ",
+    amorOption1Title: "Compatibilidad por Signos",
+    amorOption1Desc: "Selecciona esta opción si solo conoces el signo zodiacal de las dos personas (ej: Tauro y Leo). No necesitas fecha ni hora exacta. Es la más rápida.",
+    amorOption2Title: "Compatibilidad Profunda (con tu propia carta)",
+    amorOption2Desc: "Selecciona esta opción si quieres saber qué signos son compatibles contigo en general — para matrimonio, romance, intimidad, etc. Solo se necesita tu carta natal, no la de otra persona.",
+    amorOption2Warn: "⚠ Necesitas activar tu carta natal primero (botón \"Mi Carta\" arriba)",
+    amorOption3Title: "Compatibilidad con Otra Persona",
+    amorOption3Desc: "Selecciona esta opción si quieres comparar tu carta con la de alguien específico (tu pareja, un crush, etc). Necesitas saber su fecha Y hora de nacimiento. Es el análisis más completo que existe.",
+    amorOption3Warn: "⚠ Necesitas activar tu carta natal primero",
+    amorBack: "← Volver",
+    amorBySignTitle: "Por Signo Solar",
+    amorYourSign: "Tu signo:",
+    amorYourSignSelected: "Tu signo seleccionado. Ahora elige el de la otra persona:",
+    amorYourNatalSign: "tu signo natal",
+    amorChange: "cambiar",
+    amorNeedChartFirst: "Primero necesitas tu carta natal. Ve a \"Mi Carta ✨\" arriba.",
+    amorOtherPersonTitle: "Compatibilidad con Otra Persona",
+    amorLoadingSaved: "Cargando personas guardadas…",
+    amorSavedPeople: "Tus personas guardadas:",
+    amorAddNewPerson: "➕ Agregar Nueva Persona",
+    amorEditPerson: "Editar Persona",
+    amorNewPerson: "Nueva Persona",
+    amorWhoIsThisPerson: "¿Quién es esta persona?",
+    amorNameLabel: "NOMBRE *",
+    amorNamePlaceholder: "Su nombre",
+    amorRelationLabel: "RELACIÓN *",
+    amorRelPareja: "Pareja",
+    amorRelCrush: "Crush",
+    amorRelAmistad: "Amistad",
+    amorRelFamilia: "Familia",
+    amorRelEx: "Ex",
+    amorRelOtro: "Otro",
+    amorDateOf: "Fecha y hora de {name}",
+    amorCityOf: "Ciudad de nacimiento de {name}",
+    amorSaveCheckbox: "Guardar a {name} para no escribir sus datos otra vez",
+    amorThisPerson: "esta persona",
+    amorContinue: "Continuar →",
+    amorSaveAndCalculate: "💾 Guardar Cambios y Calcular",
+    amorCalculateSynastry: "✨ Calcular Sinastría",
+    amorCalculatingSynastry: "Calculando la carta natal y la sinastría…",
+    amorMayTakeSeconds: "Puede tardar unos segundos",
+    amorCouldNotCalculate: "No se pudo calcular",
+    amorTryAgain: "Intentar de nuevo",
+    amorResultTitle: "Resultado",
+    amorNewQuery: "Nueva consulta",
+    amorCompatibilityLabel: "compatibilidad",
+    amorYou: "Tú",
+    amorHerHim: "Ella/Él",
+    amorSecQuimica: "Química y Atracción",
+    amorSecDesafio: "Desafíos",
+    amorSecPotencial: "Potencial a Largo Plazo",
+    amorSecConsejo: "Consejo para esta Pareja",
+
+    compatibleSignsTitle: "Tus Signos Compatibles",
+    compatibleSignsSubtitle: "Basado en tu carta natal · Toca para ver el análisis",
+    compatibleSignsHintTitle: "💡 Cada tarjeta muestra el número de casa",
+    compatibleSignsHintBody: "Estos datos vienen directo de tu carta natal real (sistema Placidus) — el mismo cálculo que ves en \"Mi Carta Natal\". Cada signo corresponde a la casa indicada en su etiqueta.",
+    compatibleSignsFooterNote: "💡 Estos son arquetipos energéticos, no recetas. Lo importante es la resonancia, no solo el signo solar.",
+    compatibleSignsViewMore: "Ver ›",
+
+    tarotTitle: "Lectura de Tarot",
+    tarotFilterAmor: "Amor",
+    tarotFilterTrabajo: "Trabajo",
+    tarotFilterDinero: "Dinero",
+    tarotFilterDecision: "Decisión",
+    tarotFilterMiCamino: "Mi camino",
+    tarotCenterMind: "Centra tu mente{intentSuffix} y presiona para revelar las cartas.",
+    tarotIntentSuffix: " en {intent}",
+    tarotReveal3: "Revelar 3 Cartas",
+    tarotTapToReveal: "Toca para revelar",
+    tarotNewDraw: "Nueva Tirada",
+    tarotPast: "PASADO",
+    tarotPresent: "PRESENTE",
+    tarotFuture: "FUTURO",
+    tarotQPast: "¿Qué dejaste atrás?",
+    tarotQPresent: "¿Dónde estás ahora?",
+    tarotQFuture: "¿Qué se aproxima?",
+
+    cartaAscendant: "Ascendente",
+    cartaMidheaven: "Medio Cielo",
+    cartaNorthNode: "Nodo Norte",
+    cartaAscSub: "tu máscara social",
+    cartaMcSub: "tu vocación",
+    cartaNnSub: "tu propósito",
+    cartaTabPlanetas: "Planetas",
+    cartaTabCasas: "Casas",
+    cartaTabAspectos: "Aspectos",
+    cartaTabTransitos: "Tránsitos",
+    cartaNoAspects: "No hay aspectos mayores activos",
+    cartaNoTransits: "Sin tránsitos activos ahora",
+    cartaTodaySkyPositions: "POSICIONES DE HOY EN EL CIELO",
+    cartaExact: "Exacto",
+    cartaHarmonious: "Armónico",
+    cartaTension: "Tensión",
+    cartaMajor: "Mayor",
+    cartaHouse: "Casa {n}",
+    cartaLilithTitle: "Lilith (Luna Negra)",
+
+    energyTitle: "ENERGÍA DEL DÍA",
+    energyAmor: "Amor",
+    energySalud: "Salud",
+    energyDinero: "Dinero",
+    energyAnimo: "Ánimo",
+
+    biorhythmTitle: "Mi Biorritmo",
+    biorhythmDesc: "Ciclos naturales de energía calculados desde tu fecha de nacimiento — cuándo rindes más y cuándo conviene bajar el ritmo.",
+    biorhythmFisico: "Físico",
+    biorhythmEmocional: "Emocional",
+    biorhythmMental: "Mental",
+    biorhythmToday: "HOY",
+    biorhythmYesterday: "Ayer",
+    biorhythmTodayLabel: "Hoy",
+
+    lunarTipsTitle: "TIPS PRÁCTICOS — {moon}",
+    astroEventsTitle: "PRÓXIMOS EVENTOS ASTROLÓGICOS",
+    moonPhasesTitle: "FASES DEL MES",
+
+    oracleAdvice: "Consejo del Día",
+    oracleGreeting: "Hola, {name}",
+    oracleSectionEnergia: "Energía General",
+    oracleSectionAmor: "Amor y Relaciones",
+    oracleSectionTrabajo: "Trabajo y Dinero",
+    interAspectsTitle: "ASPECTOS INTER-CARTA ({count} encontrados)",
+
+    langToggleLabel: "Idioma",
+  },
+  en: {
+    loginInvalidEmail: "Please enter a valid email.",
+    loginNoAccess: "This email doesn't have access to Cosmicall. If you already purchased access, contact atencionalcoientem@gmail.com",
+    loginConnError: "Connection error. Please try again.",
+    loginVerifying: "Verifying access…",
+    loginTitleApp: "Cosmicall",
+    loginSubtitle: "Your personalized astrological guide",
+    loginCardTitle: "Sign in to Cosmicall",
+    loginCardDesc: "Enter the email you used to purchase your access.",
+    loginEmailLabel: "YOUR EMAIL",
+    loginEmailPlaceholder: "you@email.com",
+    loginButtonVerifying: "Verifying…",
+    loginButtonEnter: "Enter ✨",
+    loginNoAccessFooter: "Don't have access? Contact us at",
+
+    adminPanelTitle: "⚙️ Access Panel",
+    adminActiveTotal: "{active} active · {total} total",
+    adminAddNew: "➕ Grant new access",
+    adminNamePlaceholder: "Name (optional)",
+    adminEmailPlaceholder: "email@example.com *",
+    adminInvalidEmail: "⚠ Invalid email",
+    adminAccessGranted: "✅ Access granted successfully",
+    adminAddError: "❌ Error adding. The email may already exist.",
+    adminSaving: "Saving…",
+    adminGiveAccess: "Grant Access ✨",
+    adminSearchPlaceholder: "🔍 Search by name or email…",
+    adminLoading: "Loading accesses…",
+    adminNoResults: "No results found",
+    adminNoAccesses: "No accesses registered yet",
+    adminNoName: "No name",
+    adminPause: "Pause",
+    adminActivate: "Activate",
+    adminRemoveConfirm: "Remove access for {email}?",
+
+    citySearchPlaceholder: "Type your city (e.g. Cajicá, Mumbai…)",
+    citySearchNotFound: "Not found. Try the nearest major city.",
+
+    perfilFormTitle: "Your Astral Profile",
+    perfilFormSubtitle: "For personalized readings based on your real natal chart",
+    perfilStep1Title: "What's your name?",
+    perfilNamePlaceholder: "Your full name",
+    perfilStep2Title: "Choose your avatar",
+    perfilStep2Subtitle: "This is how we'll greet you in the app",
+    perfilGenderMujer: "Woman",
+    perfilGenderHombre: "Man",
+    perfilGenderNeutro: "Neutral",
+    perfilStep3Title: "Date and time of birth",
+    perfilDateLabel: "DATE *",
+    perfilTimeLabel: "TIME *",
+    perfilTimeHint: "(if you don't know it, leave 12:00)",
+    perfilTimeNote: "💡 The exact time gives the Ascendant and the 12 houses. If you were born at exact noon, use 24h format: 12 noon is 12:00, not 00:00.",
+    perfilStep4Title: "City of birth",
+    perfilBack: "← Back",
+    perfilContinue: "Continue →",
+    perfilCalculate: "✨ Calculate my natal chart",
+
+    settingsTitle: "Settings",
+    settingsMyProfile: "My profile",
+    settingsEditChart: "Edit my natal chart",
+    settingsMyAccount: "My account",
+    settingsChangePlan: "Change plan or cancel subscription",
+    settingsOpeningPortal: "Opening plan management…",
+    settingsHelpCenter: "Help center",
+    settingsContactUs: "Contact us",
+    settingsPortalError: "We couldn't open your plan management. If the problem persists, write to us at atencionalcoientem@gmail.com.",
+    settingsLogout: "Log out",
+
+    appHeaderBrand: "Cosmicall",
+    appAdminButton: "⚙️ Access",
+    appMyChartButton: "My Chart ✨",
+    appSettingsAria: "Settings",
+    appProfileModalTitle: "Astral Profile",
+    appSaveErrorTitle: "Couldn't save to the cloud",
+    appSaveErrorDesc: "Your chart was calculated fine, but saving failed. Copy this message to review it:",
+    appCopyError: "📋 Copy error",
+    appContinue: "Continue →",
+    appCalculatingChart: "Calculating your natal chart with precise astronomical data…",
+    appSavingProfile: "Saving your profile…",
+    appCalcError: "⚠ Error calculating the chart: {error}. Check your connection and try again.",
+    appActivateChart: "Activate your natal chart",
+    appActivateChartDesc: "For personalized readings",
+    appNatalChartTitle: "🌌 Your Natal Chart",
+    appNatalChartCardTitle: "Personalized Natal Chart",
+    appNatalChartCardDesc: "Enter your date, time, and place of birth to calculate your real natal chart with all 10 planets, 12 houses, Lilith, and all aspects.",
+    appCalculateChart: "Calculate my Chart ✨",
+    appEdit: "Edit",
+    appNavInicio: "Home",
+    appNavCarta: "Chart",
+    appNavAmor: "Love",
+    appNavTarot: "Tarot",
+    appNavMas: "More",
+    appTileTarotLabel: "Tarot",
+    appTileTarotDesc: "3-card reading",
+    appTileMoreLabel: "See more",
+    appTileMoreDesc: "Moon, events, signs",
+
+    masSubLuna: "🌙 Moon",
+    masSubEventos: "📅 Events",
+    masSubPlanetas: "🪐 Planets",
+    masSubSignos: "♈ Signs",
+    masPlanetPositionsTitle: "TODAY'S PLANETARY POSITIONS",
+
+    signosListHint: "Tap any sign to see its full characteristics, ruling planet, strengths, and compatibilities.",
+    signDetailBack: "← Back to all signs",
+    signDetailElement: "ELEMENT",
+    signDetailRulerPlanet: "RULING PLANET",
+    signDetailColor: "COLOR",
+    signDetailModality: "MODALITY",
+    signDetailWhyTitle: "WHY {ruler}?",
+    signDetailWhyBody: "{sign} is ruled by {ruler}, {rulerWhy}. That's why this energy shapes so much of its way of being.",
+    signDetailTraitsTitle: "MAIN TRAITS",
+    signDetailStrengths: "💪 STRENGTHS",
+    signDetailChallenges: "⚡ CHALLENGES",
+    signDetailLoveStyle: "💕 HOW {sign} LOVES",
+    signDetailCompatible: "✨ MOST COMPATIBLE WITH",
+
+    amorTitle: "Love & Compatibility",
+    amorSubtitle: "Choose how you want to explore compatibility. Start with the first option if you're not sure.",
+    amorStartHere: "START HERE",
+    amorOption1Title: "Compatibility by Sign",
+    amorOption1Desc: "Choose this option if you only know the zodiac sign of both people (e.g. Taurus and Leo). No exact date or time needed. It's the fastest.",
+    amorOption2Title: "Deep Compatibility (with your own chart)",
+    amorOption2Desc: "Choose this option if you want to know which signs are compatible with you in general — for marriage, romance, intimacy, etc. Only your natal chart is needed, not anyone else's.",
+    amorOption2Warn: "⚠ You need to activate your natal chart first (\"My Chart\" button above)",
+    amorOption3Title: "Compatibility with Another Person",
+    amorOption3Desc: "Choose this option if you want to compare your chart with someone specific (your partner, a crush, etc). You need to know their date AND time of birth. It's the most complete analysis there is.",
+    amorOption3Warn: "⚠ You need to activate your natal chart first",
+    amorBack: "← Back",
+    amorBySignTitle: "By Sun Sign",
+    amorYourSign: "Your sign:",
+    amorYourSignSelected: "Your sign is selected. Now choose the other person's:",
+    amorYourNatalSign: "your natal sign",
+    amorChange: "change",
+    amorNeedChartFirst: "First you need your natal chart. Go to \"My Chart ✨\" above.",
+    amorOtherPersonTitle: "Compatibility with Another Person",
+    amorLoadingSaved: "Loading saved people…",
+    amorSavedPeople: "Your saved people:",
+    amorAddNewPerson: "➕ Add New Person",
+    amorEditPerson: "Edit Person",
+    amorNewPerson: "New Person",
+    amorWhoIsThisPerson: "Who is this person?",
+    amorNameLabel: "NAME *",
+    amorNamePlaceholder: "Their name",
+    amorRelationLabel: "RELATIONSHIP *",
+    amorRelPareja: "Partner",
+    amorRelCrush: "Crush",
+    amorRelAmistad: "Friend",
+    amorRelFamilia: "Family",
+    amorRelEx: "Ex",
+    amorRelOtro: "Other",
+    amorDateOf: "Date and time of {name}",
+    amorCityOf: "City of birth of {name}",
+    amorSaveCheckbox: "Save {name} so you don't have to enter their info again",
+    amorThisPerson: "this person",
+    amorContinue: "Continue →",
+    amorSaveAndCalculate: "💾 Save Changes and Calculate",
+    amorCalculateSynastry: "✨ Calculate Synastry",
+    amorCalculatingSynastry: "Calculating the natal chart and synastry…",
+    amorMayTakeSeconds: "This may take a few seconds",
+    amorCouldNotCalculate: "Couldn't calculate",
+    amorTryAgain: "Try again",
+    amorResultTitle: "Result",
+    amorNewQuery: "New query",
+    amorCompatibilityLabel: "compatibility",
+    amorYou: "You",
+    amorHerHim: "Her/Him",
+    amorSecQuimica: "Chemistry and Attraction",
+    amorSecDesafio: "Challenges",
+    amorSecPotencial: "Long-Term Potential",
+    amorSecConsejo: "Advice for this Couple",
+
+    compatibleSignsTitle: "Your Compatible Signs",
+    compatibleSignsSubtitle: "Based on your natal chart · Tap to see the analysis",
+    compatibleSignsHintTitle: "💡 Each card shows the house number",
+    compatibleSignsHintBody: "This data comes directly from your real natal chart (Placidus system) — the same calculation you see in \"My Natal Chart\". Each sign corresponds to the house indicated on its label.",
+    compatibleSignsFooterNote: "💡 These are energetic archetypes, not prescriptions. What matters is the resonance, not just the sun sign.",
+    compatibleSignsViewMore: "View ›",
+
+    tarotTitle: "Tarot Reading",
+    tarotFilterAmor: "Love",
+    tarotFilterTrabajo: "Work",
+    tarotFilterDinero: "Money",
+    tarotFilterDecision: "Decision",
+    tarotFilterMiCamino: "My path",
+    tarotCenterMind: "Center your mind{intentSuffix} and press to reveal the cards.",
+    tarotIntentSuffix: " on {intent}",
+    tarotReveal3: "Reveal 3 Cards",
+    tarotTapToReveal: "Tap to reveal",
+    tarotNewDraw: "New Draw",
+    tarotPast: "PAST",
+    tarotPresent: "PRESENT",
+    tarotFuture: "FUTURE",
+    tarotQPast: "What did you leave behind?",
+    tarotQPresent: "Where are you now?",
+    tarotQFuture: "What's coming?",
+
+    cartaAscendant: "Ascendant",
+    cartaMidheaven: "Midheaven",
+    cartaNorthNode: "North Node",
+    cartaAscSub: "your social mask",
+    cartaMcSub: "your vocation",
+    cartaNnSub: "your purpose",
+    cartaTabPlanetas: "Planets",
+    cartaTabCasas: "Houses",
+    cartaTabAspectos: "Aspects",
+    cartaTabTransitos: "Transits",
+    cartaNoAspects: "No major aspects active",
+    cartaNoTransits: "No active transits right now",
+    cartaTodaySkyPositions: "TODAY'S SKY POSITIONS",
+    cartaExact: "Exact",
+    cartaHarmonious: "Harmonious",
+    cartaTension: "Tension",
+    cartaMajor: "Major",
+    cartaHouse: "House {n}",
+    cartaLilithTitle: "Lilith (Black Moon)",
+
+    energyTitle: "TODAY'S ENERGY",
+    energyAmor: "Love",
+    energySalud: "Health",
+    energyDinero: "Money",
+    energyAnimo: "Mood",
+
+    biorhythmTitle: "My Biorhythm",
+    biorhythmDesc: "Natural energy cycles calculated from your birth date — when you perform best and when it's best to slow down.",
+    biorhythmFisico: "Physical",
+    biorhythmEmocional: "Emotional",
+    biorhythmMental: "Mental",
+    biorhythmToday: "TODAY",
+    biorhythmYesterday: "Yesterday",
+    biorhythmTodayLabel: "Today",
+
+    lunarTipsTitle: "PRACTICAL TIPS — {moon}",
+    astroEventsTitle: "UPCOMING ASTROLOGICAL EVENTS",
+    moonPhasesTitle: "PHASES OF THE MONTH",
+
+    oracleAdvice: "Advice of the Day",
+    oracleGreeting: "Hi, {name}",
+    oracleSectionEnergia: "General Energy",
+    oracleSectionAmor: "Love and Relationships",
+    oracleSectionTrabajo: "Work and Money",
+    interAspectsTitle: "INTER-CHART ASPECTS ({count} found)",
+
+    langToggleLabel: "Language",
+  },
+};
+
+const LanguageContext = createContext({ language: "es", setLanguage: () => {} });
+
+function interpolate(str, vars) {
+  if (!vars) return str;
+  return str.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+}
+
+function useLanguage() {
+  const { language, setLanguage } = useContext(LanguageContext);
+  function t(key, vars) {
+    const dict = TRANSLATIONS[language] || TRANSLATIONS.es;
+    const str = dict[key] ?? TRANSLATIONS.es[key] ?? key;
+    return interpolate(str, vars);
+  }
+  return { t, language, setLanguage };
+}
+
+function LanguageToggle({ style = {} }) {
+  const { language, setLanguage } = useLanguage();
+  function flip() {
+    const next = language === "es" ? "en" : "es";
+    setLanguage(next);
+    try { localStorage.setItem("cosmicall_lang", next); } catch {}
+  }
+  return (
+    <button
+      onClick={flip}
+      aria-label="ES/EN"
+      style={{
+        background: "none", border: "1px solid #2e1f5e", borderRadius: 20,
+        padding: "4px 10px", color: "#9080b0", fontSize: 11, fontWeight: 700,
+        cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.5,
+        ...style,
+      }}
+    >
+      {language === "es" ? "ES" : "EN"} ⇄
+    </button>
+  );
+}
 
 // ── SUPABASE CONFIG ──────────────────────────────────────
 const SUPABASE_URL = "https://sgcwzazrsuhydkfzpjce.supabase.co";
@@ -168,6 +700,7 @@ const C_ACCESS = {
 };
 
 function LoginGate({ onLogin }) {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -176,7 +709,7 @@ function LoginGate({ onLogin }) {
   async function handleSubmit() {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !trimmed.includes("@")) {
-      setError("Por favor ingresa un email válido.");
+      setError(t("loginInvalidEmail"));
       return;
     }
     setLoading(true);
@@ -192,11 +725,11 @@ function LoginGate({ onLogin }) {
       if (hasAccess) {
         onLogin(trimmed, false);
       } else {
-        setError("Este email no tiene acceso a Cosmicall. Si ya compraste tu acceso, contacta a atencionalcoientem@gmail.com");
+        setError(t("loginNoAccess"));
         setStep("email");
       }
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError(t("loginConnError"));
       setStep("email");
     }
     setLoading(false);
@@ -205,11 +738,14 @@ function LoginGate({ onLogin }) {
   return (
     <div style={{ minHeight: "100vh", background: C_ACCESS.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
       <div style={{ width: "100%", maxWidth: 380 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <LanguageToggle />
+        </div>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✨</div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: C_ACCESS.gold, margin: "0 0 6px", letterSpacing: -0.5 }}>Cosmicall</h1>
-          <p style={{ color: C_ACCESS.muted, fontSize: 14, margin: 0 }}>Tu guía astrológica personalizada</p>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: C_ACCESS.gold, margin: "0 0 6px", letterSpacing: -0.5 }}>{t("loginTitleApp")}</h1>
+          <p style={{ color: C_ACCESS.muted, fontSize: 14, margin: 0 }}>{t("loginSubtitle")}</p>
         </div>
 
         {/* Card */}
@@ -217,24 +753,24 @@ function LoginGate({ onLogin }) {
           {step === "checking" ? (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🔭</div>
-              <p style={{ color: C_ACCESS.muted, fontSize: 14 }}>Verificando acceso…</p>
+              <p style={{ color: C_ACCESS.muted, fontSize: 14 }}>{t("loginVerifying")}</p>
             </div>
           ) : (
             <>
-              <h2 style={{ color: C_ACCESS.white, fontSize: 16, fontWeight: 700, margin: "0 0 6px" }}>Ingresar a Cosmicall</h2>
+              <h2 style={{ color: C_ACCESS.white, fontSize: 16, fontWeight: 700, margin: "0 0 6px" }}>{t("loginCardTitle")}</h2>
               <p style={{ color: C_ACCESS.muted, fontSize: 13, margin: "0 0 20px", lineHeight: 1.5 }}>
-                Ingresa el email con el que compraste tu acceso.
+                {t("loginCardDesc")}
               </p>
 
               <label style={{ fontSize: 11, color: C_ACCESS.muted, fontWeight: 600, display: "block", marginBottom: 6, letterSpacing: 0.5 }}>
-                TU EMAIL
+                {t("loginEmailLabel")}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setError(""); }}
                 onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                placeholder="tu@email.com"
+                placeholder={t("loginEmailPlaceholder")}
                 autoFocus
                 style={{
                   width: "100%", background: "#0a0518", border: `1px solid ${error ? C_ACCESS.danger : C_ACCESS.border}`,
@@ -260,14 +796,14 @@ function LoginGate({ onLogin }) {
                   transition: "background 0.15s",
                 }}
               >
-                {loading ? "Verificando…" : "Entrar ✨"}
+                {loading ? t("loginButtonVerifying") : t("loginButtonEnter")}
               </button>
             </>
           )}
         </div>
 
         <p style={{ textAlign: "center", color: C_ACCESS.muted, fontSize: 11, marginTop: 16, lineHeight: 1.6 }}>
-          ¿No tienes acceso? Contáctanos en<br />
+          {t("loginNoAccessFooter")}<br />
           <span style={{ color: C_ACCESS.gold }}>atencionalcoientem@gmail.com</span>
         </p>
       </div>
@@ -277,6 +813,7 @@ function LoginGate({ onLogin }) {
 
 // ── ADMIN PANEL ──────────────────────────────────────────
 function AdminPanel({ onClose }) {
+  const { t } = useLanguage();
   const [accesos, setAccesos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState("");
@@ -298,15 +835,15 @@ function AdminPanel({ onClose }) {
 
   async function addAcceso() {
     if (!newEmail.trim() || !newEmail.includes("@")) {
-      setMsg("⚠ Email inválido"); return;
+      setMsg(t("adminInvalidEmail")); return;
     }
     setAdding(true); setMsg("");
     try {
       await sb.addAcceso(newEmail, newNombre || newEmail.split("@")[0]);
-      setMsg("✅ Acceso dado correctamente");
+      setMsg(t("adminAccessGranted"));
       setNewEmail(""); setNewNombre("");
       await loadAccesos();
-    } catch { setMsg("❌ Error al agregar. Puede que el email ya exista."); }
+    } catch { setMsg(t("adminAddError")); }
     setAdding(false);
   }
 
@@ -316,7 +853,7 @@ function AdminPanel({ onClose }) {
   }
 
   async function remove(email) {
-    if (!window.confirm(`¿Quitar acceso a ${email}?`)) return;
+    if (!window.confirm(t("adminRemoveConfirm", { email }))) return;
     await sb.deleteAcceso(email);
     await loadAccesos();
   }
@@ -338,8 +875,8 @@ function AdminPanel({ onClose }) {
         {/* Header */}
         <div style={{ background: "#160d30", borderBottom: `1px solid #2e1f5e`, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 10 }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0c040" }}>⚙️ Panel de Accesos</div>
-            <div style={{ fontSize: 11, color: "#9080b0", marginTop: 2 }}>{accesos.filter(a => a.activo).length} activos · {accesos.length} total</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f0c040" }}>{t("adminPanelTitle")}</div>
+            <div style={{ fontSize: 11, color: "#9080b0", marginTop: 2 }}>{t("adminActiveTotal", { active: accesos.filter(a => a.activo).length, total: accesos.length })}</div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#9080b0", fontSize: 22, cursor: "pointer" }}>×</button>
         </div>
@@ -347,23 +884,23 @@ function AdminPanel({ onClose }) {
         <div style={{ padding: 16 }}>
           {/* Agregar nuevo */}
           <div style={{ background: "#1e1240", border: `1px solid #2e1f5e`, borderRadius: 16, padding: 16, marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0c040", marginBottom: 12 }}>➕ Dar acceso nuevo</div>
-            <input value={newNombre} onChange={e => setNewNombre(e.target.value)} placeholder="Nombre (opcional)" style={{ ...inp, width: "100%", marginBottom: 8 }} />
-            <input type="email" value={newEmail} onChange={e => { setNewEmail(e.target.value); setMsg(""); }} onKeyDown={e => e.key === "Enter" && addAcceso()} placeholder="email@ejemplo.com *" style={{ ...inp, width: "100%", marginBottom: 10 }} />
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0c040", marginBottom: 12 }}>{t("adminAddNew")}</div>
+            <input value={newNombre} onChange={e => setNewNombre(e.target.value)} placeholder={t("adminNamePlaceholder")} style={{ ...inp, width: "100%", marginBottom: 8 }} />
+            <input type="email" value={newEmail} onChange={e => { setNewEmail(e.target.value); setMsg(""); }} onKeyDown={e => e.key === "Enter" && addAcceso()} placeholder={t("adminEmailPlaceholder")} style={{ ...inp, width: "100%", marginBottom: 10 }} />
             {msg && <p style={{ fontSize: 12, color: msg.startsWith("✅") ? "#30d080" : "#e04060", margin: "0 0 10px" }}>{msg}</p>}
             <button onClick={addAcceso} disabled={adding || !newEmail.trim()} style={{ width: "100%", background: adding || !newEmail.trim() ? "#2e1f5e" : "#f0c040", color: adding || !newEmail.trim() ? "#9080b0" : "#1a0d00", border: "none", borderRadius: 10, padding: "11px", fontSize: 14, fontWeight: 700, cursor: adding || !newEmail.trim() ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
-              {adding ? "Guardando…" : "Dar Acceso ✨"}
+              {adding ? t("adminSaving") : t("adminGiveAccess")}
             </button>
           </div>
 
           {/* Buscador */}
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 Buscar por nombre o email…" style={{ ...inp, width: "100%", marginBottom: 12 }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("adminSearchPlaceholder")} style={{ ...inp, width: "100%", marginBottom: 12 }} />
 
           {/* Lista */}
           {loading ? (
-            <div style={{ textAlign: "center", padding: 32 }}><p style={{ color: "#9080b0" }}>Cargando accesos…</p></div>
+            <div style={{ textAlign: "center", padding: 32 }}><p style={{ color: "#9080b0" }}>{t("adminLoading")}</p></div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 32 }}><p style={{ color: "#9080b0" }}>{search ? "No se encontraron resultados" : "Aún no hay accesos registrados"}</p></div>
+            <div style={{ textAlign: "center", padding: 32 }}><p style={{ color: "#9080b0" }}>{search ? t("adminNoResults") : t("adminNoAccesses")}</p></div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {filtered.map((a, i) => (
@@ -372,12 +909,12 @@ function AdminPanel({ onClose }) {
                     {a.activo ? "✓" : "✗"}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f8f4ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nombre || "Sin nombre"}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f8f4ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nombre || t("adminNoName")}</div>
                     <div style={{ fontSize: 11, color: "#9080b0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.email}</div>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button onClick={() => toggle(a.email, a.activo)} style={{ background: a.activo ? "#e0406020" : "#30d08020", border: `1px solid ${a.activo ? "#e0406044" : "#30d08044"}`, borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: a.activo ? "#e04060" : "#30d080", cursor: "pointer", fontFamily: "inherit" }}>
-                      {a.activo ? "Pausar" : "Activar"}
+                      {a.activo ? t("adminPause") : t("adminActivate")}
                     </button>
                     <button onClick={() => remove(a.email)} style={{ background: "#e0406015", border: `1px solid #e0406033`, borderRadius: 8, padding: "5px 8px", fontSize: 11, color: "#e04060", cursor: "pointer", fontFamily: "inherit" }}>
                       🗑
@@ -845,18 +1382,19 @@ function GhostBtn({children,onClick,active,style={}}){return <button onClick={on
 
 // ── CITY SEARCH ──────────────────────────────────────────
 function CitySearch({value,onChange}){
+  const{t}=useLanguage();
   const[input,setInput]=useState(value?`${value.n}, ${value.c}`:"");
   const[sugg,setSugg]=useState([]);
   function handle(v){setInput(v);setSugg(v.length>=2?searchCities(v):[]);if(value)onChange(null);}
   function pick(c){setInput(`${c.n}, ${c.c}`);setSugg([]);onChange(c);}
   return <div style={{position:"relative"}}>
-    <input value={input} onChange={e=>handle(e.target.value)} placeholder="Escribe tu ciudad (ej: Cajicá, Mumbai…)" style={{width:"100%",background:C.bgDeep,border:`1px solid ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.white,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}} />
+    <input value={input} onChange={e=>handle(e.target.value)} placeholder={t("citySearchPlaceholder")} style={{width:"100%",background:C.bgDeep,border:`1px solid ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.white,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}} />
     {sugg.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:50,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginTop:4,boxShadow:"0 8px 24px rgba(0,0,0,0.5)"}}>
       {sugg.map((c,i)=><div key={i} onClick={()=>pick(c)} style={{padding:"10px 14px",cursor:"pointer",display:"flex",gap:10,borderBottom:i<sugg.length-1?`1px solid ${C.border}`:"none"}} onMouseEnter={e=>e.currentTarget.style.background=`${C.violet}20`} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
         <span>📍</span><div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{c.n}</div><div style={{fontSize:11,color:C.muted}}>{c.c}</div></div>
       </div>)}
     </div>}
-    {input.length>=2&&sugg.length===0&&!value&&<p style={{color:C.warn,fontSize:11,marginTop:6}}>No encontrada. Intenta con la ciudad principal más cercana.</p>}
+    {input.length>=2&&sugg.length===0&&!value&&<p style={{color:C.warn,fontSize:11,marginTop:6}}>{t("citySearchNotFound")}</p>}
     {value&&<div style={{marginTop:8,background:`${C.success}15`,border:`1px solid ${C.success}44`,borderRadius:10,padding:"8px 12px"}}><span style={{fontSize:12,color:C.success,fontWeight:700}}>✓ {value.n}, {value.c}</span></div>}
   </div>;
 }
@@ -894,6 +1432,7 @@ const AVATARS = [
 ];
 
 function PerfilForm({onSave}){
+  const{t}=useLanguage();
   const[step,setStep]=useState(1);
   const[name,setName]=useState("");
   const[genero,setGenero]=useState("");
@@ -905,18 +1444,18 @@ function PerfilForm({onSave}){
   function canGo(){if(step===1)return name.trim().length>1;if(step===2)return!!genero&&!!avatar;if(step===3)return!!(birthdate&&birthtime);if(step===4)return!!city;}
   function save(){onSave({name,genero,avatar,birthdate,birthtime,city:city.n,lat:city.lat,lon:city.lon});}
   return <div style={{padding:16}}>
-    <div style={{textAlign:"center",marginBottom:20}}><div style={{fontSize:40,marginBottom:8}}>🌌</div><h2 style={{color:C.gold,fontSize:18,fontWeight:800,margin:"0 0 4px"}}>Tu Perfil Astral</h2><p style={{color:C.muted,fontSize:12}}>Para lecturas personalizadas con tu carta natal real</p>
+    <div style={{textAlign:"center",marginBottom:20}}><div style={{fontSize:40,marginBottom:8}}>🌌</div><h2 style={{color:C.gold,fontSize:18,fontWeight:800,margin:"0 0 4px"}}>{t("perfilFormTitle")}</h2><p style={{color:C.muted,fontSize:12}}>{t("perfilFormSubtitle")}</p>
       <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:12}}>{[1,2,3,4].map(s=><div key={s} style={{width:24,height:24,borderRadius:"50%",background:step>=s?C.gold:C.mutedDark,color:step>=s?"#1a0d00":C.muted,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>{s}</div>)}</div>
     </div>
     <Card>
-      {step===1&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>👤</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>¿Cómo te llamas?</h3><input value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre completo" onKeyDown={e=>e.key==="Enter"&&canGo()&&setStep(2)} style={inp} autoFocus /></>}
+      {step===1&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>👤</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>{t("perfilStep1Title")}</h3><input value={name} onChange={e=>setName(e.target.value)} placeholder={t("perfilNamePlaceholder")} onKeyDown={e=>e.key==="Enter"&&canGo()&&setStep(2)} style={inp} autoFocus /></>}
       {step===2&&<>
         <div style={{fontSize:20,textAlign:"center",marginBottom:10}}>🎨</div>
-        <h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:4,textAlign:"center"}}>Elige tu avatar</h3>
-        <p style={{color:C.muted,fontSize:11,textAlign:"center",marginBottom:14}}>Así te vamos a saludar en la app</p>
+        <h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:4,textAlign:"center"}}>{t("perfilStep2Title")}</h3>
+        <p style={{color:C.muted,fontSize:11,textAlign:"center",marginBottom:14}}>{t("perfilStep2Subtitle")}</p>
         <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:14}}>
-          {["Mujer","Hombre","Neutro"].map(g=>(
-            <button key={g} onClick={()=>{setGenero(g);setAvatar("");}} style={{background:genero===g?`${C.gold}22`:"transparent",border:`1px solid ${genero===g?C.gold:C.border}`,borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:600,color:genero===g?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit"}}>{g}</button>
+          {[{val:"Mujer",key:"perfilGenderMujer"},{val:"Hombre",key:"perfilGenderHombre"},{val:"Neutro",key:"perfilGenderNeutro"}].map(g=>(
+            <button key={g.val} onClick={()=>{setGenero(g.val);setAvatar("");}} style={{background:genero===g.val?`${C.gold}22`:"transparent",border:`1px solid ${genero===g.val?C.gold:C.border}`,borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:600,color:genero===g.val?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit"}}>{t(g.key)}</button>
           ))}
         </div>
         {genero&&<div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
@@ -925,18 +1464,18 @@ function PerfilForm({onSave}){
           ))}
         </div>}
       </>}
-      {step===3&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📅</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>Fecha y hora de nacimiento</h3>
-        <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>FECHA *</label>
+      {step===3&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📅</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>{t("perfilStep3Title")}</h3>
+        <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>{t("perfilDateLabel")}</label>
         <input type="date" value={birthdate} onChange={e=>setBirthdate(e.target.value)} style={{...inp,colorScheme:"dark",marginBottom:12}} />
-        <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>HORA * <span style={{color:C.mutedDark,fontWeight:400}}>(si no la sabes, deja 12:00)</span></label>
+        <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>{t("perfilTimeLabel")} <span style={{color:C.mutedDark,fontWeight:400}}>{t("perfilTimeHint")}</span></label>
         <input type="time" value={birthtime} onChange={e=>setBirthtime(e.target.value)} style={{...inp,colorScheme:"dark"}} />
-        <div style={{marginTop:10,background:`${C.gold}10`,border:`1px solid ${C.goldDim}33`,borderRadius:10,padding:10}}><p style={{color:C.gold,fontSize:11,lineHeight:1.5}}>💡 La hora exacta da el Ascendente y las 12 casas. Si naciste a mediodía exacto, usa el formato 24h: las 12 del mediodía son <strong>12:00</strong>, no 00:00.</p></div>
+        <div style={{marginTop:10,background:`${C.gold}10`,border:`1px solid ${C.goldDim}33`,borderRadius:10,padding:10}}><p style={{color:C.gold,fontSize:11,lineHeight:1.5}}>{t("perfilTimeNote")}</p></div>
       </>}
-      {step===4&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📍</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>Ciudad de nacimiento</h3><CitySearch value={city} onChange={setCity} /></>}
+      {step===4&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📍</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>{t("perfilStep4Title")}</h3><CitySearch value={city} onChange={setCity} /></>}
     </Card>
     <div style={{display:"flex",gap:10,marginTop:14}}>
-      {step>1&&<GhostBtn onClick={()=>setStep(s=>s-1)} style={{flex:1}}>← Atrás</GhostBtn>}
-      {step<4?<GoldBtn onClick={()=>setStep(s=>s+1)} disabled={!canGo()} style={{flex:1}}>Continuar →</GoldBtn>:<GoldBtn onClick={save} disabled={!canGo()} style={{flex:1}}>✨ Calcular mi carta natal</GoldBtn>}
+      {step>1&&<GhostBtn onClick={()=>setStep(s=>s-1)} style={{flex:1}}>{t("perfilBack")}</GhostBtn>}
+      {step<4?<GoldBtn onClick={()=>setStep(s=>s+1)} disabled={!canGo()} style={{flex:1}}>{t("perfilContinue")}</GoldBtn>:<GoldBtn onClick={save} disabled={!canGo()} style={{flex:1}}>{t("perfilCalculate")}</GoldBtn>}
     </div>
   </div>;
 }
@@ -998,16 +1537,17 @@ const ELEM_SIGNS_BASE = {
 };
 
 function EnergyBars({ chart, transits }) {
+  const{t}=useLanguage();
   const bars = calcEnergyBars(chart, transits);
   const items = [
-    { label:"Amor", value:bars.amor, color:"#e056a0", icon:"💕" },
-    { label:"Salud", value:bars.salud, color:"#30d0b0", icon:"✨" },
-    { label:"Dinero", value:bars.dinero, color:"#f0c040", icon:"💰" },
-    { label:"Ánimo", value:bars.animo, color:"#9b6dff", icon:"⚡" },
+    { label:t("energyAmor"), value:bars.amor, color:"#e056a0", icon:"💕" },
+    { label:t("energySalud"), value:bars.salud, color:"#30d0b0", icon:"✨" },
+    { label:t("energyDinero"), value:bars.dinero, color:"#f0c040", icon:"💰" },
+    { label:t("energyAnimo"), value:bars.animo, color:"#9b6dff", icon:"⚡" },
   ];
   return (
     <div style={{margin:"0 16px 14px",background:"#1e1240",border:"1px solid #2e1f5e",borderRadius:16,padding:16}}>
-      <div style={{fontSize:11,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:14}}>ENERGÍA DEL DÍA</div>
+      <div style={{fontSize:11,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:14}}>{t("energyTitle")}</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
         {items.map(item=>(
           <div key={item.label}>
@@ -1047,11 +1587,12 @@ function calcBiorhythm(birthdate) {
 }
 
 function BiorhythmCard({ birthdate }) {
+  const{t}=useLanguage();
   const bio = calcBiorhythm(birthdate);
   const items = [
-    { label:"Físico", value:bio.fisico, color:"#30d080" },
-    { label:"Emocional", value:bio.emocional, color:"#e056a0" },
-    { label:"Mental", value:bio.intelectual, color:"#f0c040" },
+    { label:t("biorhythmFisico"), value:bio.fisico, color:"#30d080" },
+    { label:t("biorhythmEmocional"), value:bio.emocional, color:"#e056a0" },
+    { label:t("biorhythmMental"), value:bio.intelectual, color:"#f0c040" },
   ];
   // Mini chart: 7 days
   const baseDays = daysSinceBirth(birthdate);
@@ -1064,12 +1605,12 @@ function BiorhythmCard({ birthdate }) {
       m:Math.round(Math.sin(2*Math.PI*d/33)*100),
     };
   });
-  const dayLabels=["","","Ayer","Hoy","","",""];
+  const dayLabels=["","",t("biorhythmYesterday"),t("biorhythmTodayLabel"),"","",""];
   return (
     <div style={{margin:"0 16px 14px",background:"#1e1240",border:"1px solid #2e1f5e",borderRadius:16,padding:16}}>
       <div style={{marginBottom:14}}>
-        <div style={{fontSize:13,color:"#f8f4ff",fontWeight:700}}>Mi Biorritmo</div>
-        <div style={{fontSize:11,color:"#9080b0",marginTop:2,lineHeight:1.4}}>Ciclos naturales de energía calculados desde tu fecha de nacimiento — cuándo rindes más y cuándo conviene bajar el ritmo.</div>
+        <div style={{fontSize:13,color:"#f8f4ff",fontWeight:700}}>{t("biorhythmTitle")}</div>
+        <div style={{fontSize:11,color:"#9080b0",marginTop:2,lineHeight:1.4}}>{t("biorhythmDesc")}</div>
       </div>
       <div style={{display:"flex",gap:12,marginBottom:14}}>
         {items.map(item=>(
@@ -1090,12 +1631,12 @@ function BiorhythmCard({ birthdate }) {
                 </div>
               ))}
             </div>
-            <div style={{fontSize:8,color:i===3?"#f0c040":"#4a3870",fontWeight:i===3?700:400}}>{i===3?"HOY":""}</div>
+            <div style={{fontSize:8,color:i===3?"#f0c040":"#4a3870",fontWeight:i===3?700:400}}>{i===3?t("biorhythmToday"):""}</div>
           </div>
         ))}
       </div>
       <div style={{display:"flex",gap:12,marginTop:10,justifyContent:"center"}}>
-        {[{l:"Físico",c:"#30d080"},{l:"Emocional",c:"#e056a0"},{l:"Mental",c:"#f0c040"}].map(l=>(
+        {[{l:t("biorhythmFisico"),c:"#30d080"},{l:t("biorhythmEmocional"),c:"#e056a0"},{l:t("biorhythmMental"),c:"#f0c040"}].map(l=>(
           <div key={l.l} style={{display:"flex",alignItems:"center",gap:4}}>
             <div style={{width:8,height:8,borderRadius:"50%",background:l.c}} />
             <span style={{fontSize:9,color:"#9080b0"}}>{l.l}</span>
@@ -1244,10 +1785,11 @@ function getUpcomingEvents() {
 }
 
 function AstroEvents() {
+  const{t}=useLanguage();
   const events = getUpcomingEvents();
   return (
     <div style={{margin:"0 16px 14px"}}>
-      <div style={{fontSize:11,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:10}}>PRÓXIMOS EVENTOS ASTROLÓGICOS</div>
+      <div style={{fontSize:11,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:10}}>{t("astroEventsTitle")}</div>
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {events.map((ev,i)=>(
           <div key={i} style={{background:"#1e1240",border:`1px solid ${ev.color}33`,borderRadius:14,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start"}}>
@@ -1315,11 +1857,12 @@ function getLunarTips() {
 }
 
 function LunarTips() {
+  const{t}=useLanguage();
   const tips = getLunarTips();
   const moon = getMoonPhase();
   return (
     <div style={{margin:"0 16px 14px"}}>
-      <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:10}}>TIPS PRÁCTICOS — {moon.name.toUpperCase()}</div>
+      <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:10}}>{t("lunarTipsTitle",{moon:moon.name.toUpperCase()})}</div>
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {tips.map((tip,i)=>(
           <div key={i} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
@@ -1334,6 +1877,7 @@ function LunarTips() {
 
 // ── LUNA VISUAL DEL MES ──────────────────────────────────
 function MoonCalendar() {
+  const{t}=useLanguage();
   const phases = getMonthMoonPhases();
   const moon = getMoonPhase();
   return (
@@ -1346,7 +1890,7 @@ function MoonCalendar() {
       </div>
       {phases.length > 0 && (
         <>
-          <div style={{fontSize:10,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:10}}>FASES DEL MES</div>
+          <div style={{fontSize:10,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:10}}>{t("moonPhasesTitle")}</div>
           <div style={{display:"flex",gap:6,justifyContent:"space-around"}}>
             {phases.map((p,i)=>(
               <div key={i} style={{textAlign:"center",flex:1}}>
@@ -1383,6 +1927,7 @@ function getInterAspectMeaning(p1, p2, aspName) {
 }
 
 function SinastriaDetalle({ interAspects, s1, s2, theirName, myProfile }) {
+  const{t}=useLanguage();
   const [open, setOpen] = useState(null);
   const meaningful = interAspects.filter(a => getInterAspectMeaning(a.pA, a.pB, a.name));
   const typeColor = { major: C.gold, harmonious: C.teal, tension: C.danger };
@@ -1390,7 +1935,7 @@ function SinastriaDetalle({ interAspects, s1, s2, theirName, myProfile }) {
   return (
     <div style={{marginTop:12}}>
       <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:10}}>
-        ASPECTOS INTER-CARTA ({interAspects.length} encontrados)
+        {t("interAspectsTitle",{count:interAspects.length})}
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:6}}>
         {interAspects.slice(0,8).map((a,i)=>{
@@ -1423,9 +1968,10 @@ function SinastriaDetalle({ interAspects, s1, s2, theirName, myProfile }) {
 }
 
 function OracleCard({oracle,profile,chart,transits,setTab}){
+  const{t}=useLanguage();
   const[openSec,setOpenSec]=useState(null);
   if(!oracle)return null;
-  const ACC=[{key:"energia",label:"Energía General",icon:"⚡",color:C.gold},{key:"amor",label:"Amor y Relaciones",icon:"💕",color:C.pink},{key:"trabajo",label:"Trabajo y Dinero",icon:"💼",color:C.teal}];
+  const ACC=[{key:"energia",label:t("oracleSectionEnergia"),icon:"⚡",color:C.gold},{key:"amor",label:t("oracleSectionAmor"),icon:"💕",color:C.pink},{key:"trabajo",label:t("oracleSectionTrabajo"),icon:"💼",color:C.teal}];
   return <div>
     {/* Saludo humano */}
     {profile&&<div style={{textAlign:"center",padding:"20px 16px 8px"}}>
@@ -1438,7 +1984,7 @@ function OracleCard({oracle,profile,chart,transits,setTab}){
       }}>
         {profile.avatar || "✨"}
       </div>
-      <div style={{fontSize:18,fontWeight:800,color:C.white}}>Hola, {profile.name.split(" ")[0]}</div>
+      <div style={{fontSize:18,fontWeight:800,color:C.white}}>{t("oracleGreeting",{name:profile.name.split(" ")[0]})}</div>
     </div>}
     <div style={{textAlign:"center",padding:"10px 16px 10px"}}>
       <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:1.5,marginBottom:6}}>{new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"}).toUpperCase()}</div>
@@ -1450,7 +1996,7 @@ function OracleCard({oracle,profile,chart,transits,setTab}){
     </div>
     <div style={{margin:"0 16px 12px"}}>
       <div style={{background:`linear-gradient(135deg, ${C.violet}22, ${C.pink}18)`,border:`1px solid ${C.violet}55`,borderRadius:18,padding:"18px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}><div style={{width:32,height:32,borderRadius:"50%",background:`${C.violet}30`,border:`1px solid ${C.violet}66`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🌟</div><div style={{fontSize:11,color:C.violet,fontWeight:800,letterSpacing:1,textTransform:"uppercase"}}>Consejo del Día</div></div>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}><div style={{width:32,height:32,borderRadius:"50%",background:`${C.violet}30`,border:`1px solid ${C.violet}66`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>🌟</div><div style={{fontSize:11,color:C.violet,fontWeight:800,letterSpacing:1,textTransform:"uppercase"}}>{t("oracleAdvice")}</div></div>
         <p style={{fontSize:14,color:C.white,lineHeight:1.75,margin:0,fontStyle:"italic"}}>"{oracle.consejo}"</p>
       </div>
     </div>
@@ -1510,6 +2056,7 @@ const ASPECT_SIMPLE = {
 };
 
 function CartaNatal({chart,transits,transitAspects}){
+  const{t}=useLanguage();
   const[sec,setSec]=useState("planetas");
   const PC={Sol:C.gold,Luna:C.cyan,Mercurio:C.warn,Venus:C.pink,Marte:C.danger,Júpiter:C.violet,Saturno:C.teal,Urano:C.teal,Neptuno:C.violet,Plutón:C.muted};
   const HM=["Personalidad, apariencia","Dinero, valores","Comunicación, mente","Hogar, familia","Creatividad, romance","Salud, trabajo","Relaciones, matrimonio","Transformación, intimidad","Filosofía, viajes","Carrera, reputación","Amigos, grupos","Espiritualidad, karma"];
@@ -1525,7 +2072,7 @@ function CartaNatal({chart,transits,transitAspects}){
 
   return <div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:8,marginBottom:14}}>
-      {[{label:"Ascendente",value:`${chart.ascSign} ${chart.ascDeg}°`,glyph:"↑",color:C.gold,sub:"tu máscara social"},{label:"Medio Cielo",value:`${chart.mcSign} ${chart.mcDeg}°`,glyph:"MC",color:C.violet,sub:"tu vocación"},{label:"Nodo Norte",value:chart.nnSign,glyph:"☊",color:C.teal,sub:"tu propósito"}].map(item=>(
+      {[{label:t("cartaAscendant"),value:`${chart.ascSign} ${chart.ascDeg}°`,glyph:"↑",color:C.gold,sub:t("cartaAscSub")},{label:t("cartaMidheaven"),value:`${chart.mcSign} ${chart.mcDeg}°`,glyph:"MC",color:C.violet,sub:t("cartaMcSub")},{label:t("cartaNorthNode"),value:chart.nnSign,glyph:"☊",color:C.teal,sub:t("cartaNnSub")}].map(item=>(
         <Card key={item.label} style={{textAlign:"center",padding:12}}>
           <div style={{fontSize:16,color:item.color,fontWeight:700,marginBottom:2}}>{item.glyph}</div>
           <div style={{fontSize:12,fontWeight:700,color:item.color}}>{item.value}</div>
@@ -1536,7 +2083,7 @@ function CartaNatal({chart,transits,transitAspects}){
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
-      {[["planetas","Planetas"],["casas","Casas"],["aspectos","Aspectos"],["transitos","Tránsitos"]].map(([id,label])=><GhostBtn key={id} active={sec===id} onClick={()=>{setSec(id);setExpandedPlanet(null);setExpandedAspect(null);}}>{label}</GhostBtn>)}
+      {[["planetas",t("cartaTabPlanetas")],["casas",t("cartaTabCasas")],["aspectos",t("cartaTabAspectos")],["transitos",t("cartaTabTransitos")]].map(([id,label])=><GhostBtn key={id} active={sec===id} onClick={()=>{setSec(id);setExpandedPlanet(null);setExpandedAspect(null);}}>{label}</GhostBtn>)}
     </div>
 
     {/* Explicación de la sección actual — siempre visible */}
@@ -1568,7 +2115,7 @@ function CartaNatal({chart,transits,transitAspects}){
       <div onClick={()=>setExpandedPlanet(expandedPlanet==="Lilith"?null:"Lilith")} style={{background:C.bgCard,border:`1px solid ${expandedPlanet==="Lilith"?C.violet+"66":C.border}`,borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{fontSize:20,width:28,textAlign:"center"}}>🌑</div>
-          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.violet}}>Lilith (Luna Negra)</div><div style={{fontSize:11,color:C.muted}}>{chart.lilithSign} {chart.lilithDeg}° · Casa {chart.lilithHouse}</div></div>
+          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.violet}}>{t("cartaLilithTitle")}</div><div style={{fontSize:11,color:C.muted}}>{chart.lilithSign} {chart.lilithDeg}° · Casa {chart.lilithHouse}</div></div>
           <div style={{fontSize:12,color:C.muted}}>{expandedPlanet==="Lilith"?"▾":"▸"}</div>
         </div>
         {expandedPlanet==="Lilith"&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
@@ -1580,7 +2127,7 @@ function CartaNatal({chart,transits,transitAspects}){
     {sec==="casas"&&<div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:8}}>
       {chart.cusps.map((cusp,i)=>{const planetsHere=Object.entries(chart.planets).filter(([,d])=>d.house===i+1).map(([n])=>n);
         return <Card key={i} style={{padding:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}><div style={{fontSize:10,color:C.gold,fontWeight:700}}>CASA {i+1}</div><div style={{fontSize:13,color:C.white,fontWeight:700}}>{signOf(cusp)}</div></div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}><div style={{fontSize:10,color:C.gold,fontWeight:700}}>{t("cartaHouse",{n:i+1}).toUpperCase()}</div><div style={{fontSize:13,color:C.white,fontWeight:700}}>{signOf(cusp)}</div></div>
           <div style={{fontSize:10,color:C.muted,lineHeight:1.4,marginBottom:planetsHere.length?6:0}}>{HOUSE_SIMPLE[i]}</div>
           {planetsHere.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{planetsHere.map(p=><Pill key={p} color={PC[p]||C.muted} style={{fontSize:9,padding:"1px 6px"}}>{p}</Pill>)}</div>}
         </Card>;
@@ -1588,7 +2135,7 @@ function CartaNatal({chart,transits,transitAspects}){
     </div>}
 
     {sec==="aspectos"&&<div style={{display:"flex",flexDirection:"column",gap:6}}>
-      {chart.aspects.length===0?<p style={{color:C.muted,textAlign:"center",padding:24}}>No hay aspectos mayores activos</p>
+      {chart.aspects.length===0?<p style={{color:C.muted,textAlign:"center",padding:24}}>{t("cartaNoAspects")}</p>
         :chart.aspects.slice(0,14).map((asp,i)=>{
           const isOpen = expandedAspect === i;
           return <div key={i} onClick={()=>setExpandedAspect(isOpen?null:i)}
@@ -1596,7 +2143,7 @@ function CartaNatal({chart,transits,transitAspects}){
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <div style={{fontSize:18,color:asp.type==="harmonious"?C.teal:asp.type==="tension"?C.danger:C.gold,width:28,textAlign:"center"}}>{asp.symbol}</div>
               <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.white}}>{asp.p1} {asp.symbol} {asp.p2}</div><div style={{fontSize:11,color:C.muted}}>{asp.name} · orbe {asp.exact}°</div></div>
-              <Pill color={asp.type==="harmonious"?C.teal:asp.type==="tension"?C.danger:C.gold} style={{fontSize:9}}>{asp.type==="harmonious"?"Armónico":asp.type==="tension"?"Tensión":"Mayor"}</Pill>
+              <Pill color={asp.type==="harmonious"?C.teal:asp.type==="tension"?C.danger:C.gold} style={{fontSize:9}}>{asp.type==="harmonious"?t("cartaHarmonious"):asp.type==="tension"?t("cartaTension"):t("cartaMajor")}</Pill>
             </div>
             {isOpen&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
               <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
@@ -1608,12 +2155,12 @@ function CartaNatal({chart,transits,transitAspects}){
     </div>}
 
     {sec==="transitos"&&<div>
-      {transitAspects.length===0?<p style={{color:C.muted,textAlign:"center",padding:24}}>Sin tránsitos activos ahora</p>
+      {transitAspects.length===0?<p style={{color:C.muted,textAlign:"center",padding:24}}>{t("cartaNoTransits")}</p>
         :<div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>{transitAspects.slice(0,8).map((asp,i)=>{
           const isOpen = expandedAspect === `t${i}`;
           return <div key={i} onClick={()=>setExpandedAspect(isOpen?null:`t${i}`)}
             style={{background:C.bgCard,border:`1px solid ${isOpen?C.gold+"66":C.border}`,borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}><div style={{fontSize:12,fontWeight:700,color:C.white}}>{asp.transit} {asp.symbol} {asp.natal} natal</div><Pill color={parseFloat(asp.exact)<2?C.gold:C.violet} style={{fontSize:9}}>{parseFloat(asp.exact)<2?"Exacto":`${asp.exact}°`}</Pill></div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}><div style={{fontSize:12,fontWeight:700,color:C.white}}>{asp.transit} {asp.symbol} {asp.natal} natal</div><Pill color={parseFloat(asp.exact)<2?C.gold:C.violet} style={{fontSize:9}}>{parseFloat(asp.exact)<2?t("cartaExact"):`${asp.exact}°`}</Pill></div>
             <div style={{fontSize:11,color:C.muted}}>{asp.name} · {asp.transit} en {asp.transitSign} {asp.transitDeg}°</div>
             {isOpen&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
               <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
@@ -1622,7 +2169,7 @@ function CartaNatal({chart,transits,transitAspects}){
             </div>}
           </div>;
         })}</div>}
-      <div><div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:8}}>POSICIONES DE HOY EN EL CIELO</div>
+      <div><div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:8}}>{t("cartaTodaySkyPositions")}</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:6}}>{Object.entries(transits).map(([name,lon])=>(
           <div key={name} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 12px",display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:14}}>{PLANET_SYMBOLS[name]}</span><div><div style={{fontSize:11,fontWeight:700,color:C.white}}>{name}</div><div style={{fontSize:10,color:C.muted}}>{signOf(lon)} {degInSign(lon)}°</div></div></div>
         ))}</div>
@@ -1633,28 +2180,32 @@ function CartaNatal({chart,transits,transitAspects}){
 
 // ── TAROT VIEW ───────────────────────────────────────────
 function TarotView(){
+  const{t:tr}=useLanguage();
   const[cards,setCards]=useState(null);
   const[intent,setIntent]=useState("");
   const[revealed,setRevealed]=useState([false,false,false]);
   function draw(){setCards(drawTarot());setRevealed([false,false,false]);}
   function reveal(i){setRevealed(r=>{const n=[...r];n[i]=true;return n;});}
-  const POS=["PASADO","PRESENTE","FUTURO"];
-  const PREG={PASADO:"¿Qué dejaste atrás?",PRESENTE:"¿Dónde estás ahora?",FUTURO:"¿Qué se aproxima?"};
+  const POSKEYS=["tarotPast","tarotPresent","tarotFuture"];
+  const POS=POSKEYS.map(k=>tr(k));
+  const PREGKEYS={PASADO:"tarotQPast",PRESENTE:"tarotQPresent",FUTURO:"tarotQFuture"};
+  const POS_RAW=["PASADO","PRESENTE","FUTURO"];
   const CARD_TEXT={PASADO:"past",PRESENTE:"present",FUTURO:"future"};
+  const FILTERS=[{key:"tarotFilterAmor"},{key:"tarotFilterTrabajo"},{key:"tarotFilterDinero"},{key:"tarotFilterDecision"},{key:"tarotFilterMiCamino"}];
   return <div style={{padding:16}}>
-    <h2 style={{color:C.gold,fontSize:15,fontWeight:700,margin:"0 0 14px"}}>Lectura de Tarot</h2>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>{["Amor","Trabajo","Dinero","Decisión","Mi camino"].map(t=><GhostBtn key={t} active={intent===t} onClick={()=>setIntent(intent===t?"":t)}>{t}</GhostBtn>)}</div>
+    <h2 style={{color:C.gold,fontSize:15,fontWeight:700,margin:"0 0 14px"}}>{tr("tarotTitle")}</h2>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>{FILTERS.map(f=>{const label=tr(f.key);return <GhostBtn key={f.key} active={intent===label} onClick={()=>setIntent(intent===label?"":label)}>{label}</GhostBtn>;})}</div>
     {!cards?<Card style={{textAlign:"center",padding:32}}>
       <div style={{fontSize:48,marginBottom:12}}>🃏</div>
-      <p style={{color:C.muted,fontSize:14,marginBottom:20,lineHeight:1.6}}>Centra tu mente{intent?` en ${intent.toLowerCase()}`:""} y presiona para revelar las cartas.</p>
-      <GoldBtn onClick={draw}>Revelar 3 Cartas</GoldBtn>
+      <p style={{color:C.muted,fontSize:14,marginBottom:20,lineHeight:1.6}}>{tr("tarotCenterMind",{intentSuffix:intent?tr("tarotIntentSuffix",{intent:intent.toLowerCase()}):""})}</p>
+      <GoldBtn onClick={draw}>{tr("tarotReveal3")}</GoldBtn>
     </Card>:<div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:8,marginBottom:14}}>
         {cards.map((card,i)=><div key={i} style={{background:C.bgCard,border:`1px solid ${revealed[i]?C.gold:C.border}`,borderRadius:14,padding:12,textAlign:"center",cursor:revealed[i]?"default":"pointer",transition:"border-color 0.3s"}} onClick={()=>!revealed[i]&&reveal(i)}>
           <div style={{fontSize:10,color:C.gold,fontWeight:700,marginBottom:8}}>{POS[i]}</div>
           {!revealed[i]?<div style={{background:C.bgDeep,border:`1px solid ${C.border}`,borderRadius:8,padding:"24px 8px",marginBottom:8}}>
             <div style={{fontSize:24}}>🃏</div>
-            <div style={{fontSize:10,color:C.muted,marginTop:6}}>Toca para revelar</div>
+            <div style={{fontSize:10,color:C.muted,marginTop:6}}>{tr("tarotTapToReveal")}</div>
           </div>:<>
             <div style={{background:C.bgMid,border:`1px solid ${C.goldDim}44`,borderRadius:8,padding:"16px 8px",marginBottom:8}}><div style={{fontSize:20,color:C.gold}}>{card.s}</div></div>
             <div style={{fontSize:10,fontWeight:700,color:C.white,lineHeight:1.3,marginBottom:4}}>{card.n}</div>
@@ -1665,22 +2216,23 @@ function TarotView(){
         {cards.map((card,i)=>revealed[i]&&<Card key={i} style={{padding:14}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <div style={{width:32,height:32,borderRadius:"50%",background:`${C.gold}20`,border:`1px solid ${C.goldDim}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:C.gold,flexShrink:0}}>{card.s}</div>
-            <div><div style={{fontSize:10,color:C.muted,fontWeight:700}}>{POS[i]} — {PREG[POS[i]]}</div><div style={{fontSize:13,fontWeight:700,color:C.gold}}>{card.n}</div></div>
+            <div><div style={{fontSize:10,color:C.muted,fontWeight:700}}>{POS[i]} — {tr(PREGKEYS[POS_RAW[i]])}</div><div style={{fontSize:13,fontWeight:700,color:C.gold}}>{card.n}</div></div>
           </div>
-          <p style={{fontSize:13,color:C.white,lineHeight:1.7,margin:0}}>{card[CARD_TEXT[POS[i]]]}</p>
+          <p style={{fontSize:13,color:C.white,lineHeight:1.7,margin:0}}>{card[CARD_TEXT[POS_RAW[i]]]}</p>
         </Card>)}
       </div>}
-      <GoldBtn onClick={()=>{setCards(null);setIntent("");}} style={{width:"100%"}}>Nueva Tirada</GoldBtn>
+      <GoldBtn onClick={()=>{setCards(null);setIntent("");}} style={{width:"100%"}}>{tr("tarotNewDraw")}</GoldBtn>
     </div>}
   </div>;
 }
 
 // ── COMPATIBLE SIGNS VIEW ────────────────────────────────
 function CompatibleSignsView({chart,profile,onBack}){
+  const{t}=useLanguage();
   const[sel,setSel]=useState(null);
   const findings=buildCompatibleSignsData(chart);
   if(sel)return <div style={{padding:16}}>
-    <button onClick={()=>setSel(null)} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>← Volver</button>
+    <button onClick={()=>setSel(null)} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>{t("amorBack")}</button>
     <div style={{background:C.bgCard,border:`1px solid ${sel.color}44`,borderRadius:16,padding:16,marginBottom:14}}>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
         <div style={{width:42,height:42,borderRadius:12,background:`${sel.color}20`,border:`1px solid ${sel.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{sel.icon}</div>
@@ -1691,13 +2243,13 @@ function CompatibleSignsView({chart,profile,onBack}){
     </div>
   </div>;
   return <div style={{padding:16}}>
-    <button onClick={onBack} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>← Volver</button>
-    <div style={{marginBottom:16}}><h2 style={{color:C.gold,fontSize:16,fontWeight:800,margin:"0 0 6px"}}>Tus Signos Compatibles</h2><p style={{color:C.muted,fontSize:12,lineHeight:1.5}}>Basado en tu carta natal · Toca para ver el análisis</p>
+    <button onClick={onBack} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>{t("amorBack")}</button>
+    <div style={{marginBottom:16}}><h2 style={{color:C.gold,fontSize:16,fontWeight:800,margin:"0 0 6px"}}>{t("compatibleSignsTitle")}</h2><p style={{color:C.muted,fontSize:12,lineHeight:1.5}}>{t("compatibleSignsSubtitle")}</p>
       <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}><Pill color={C.gold}>☀️ {chart.planets.Sol.sign}</Pill><Pill color={C.pink}>♀ Venus {chart.planets.Venus.sign}</Pill><Pill color={C.warn}>♂ Marte {chart.planets.Marte.sign}</Pill></div>
     </div>
     <div style={{background:`${C.gold}10`,border:`1px solid ${C.goldDim}44`,borderRadius:12,padding:"12px 14px",marginBottom:14}}>
-      <p style={{fontSize:11,color:C.gold,fontWeight:700,margin:"0 0 4px"}}>💡 Cada tarjeta muestra el número de casa</p>
-      <p style={{fontSize:11,color:C.muted,lineHeight:1.6,margin:0}}>Estos datos vienen directo de tu carta natal real (sistema Placidus) — el mismo cálculo que ves en "Mi Carta Natal". Cada signo corresponde a la casa indicada en su etiqueta.</p>
+      <p style={{fontSize:11,color:C.gold,fontWeight:700,margin:"0 0 4px"}}>{t("compatibleSignsHintTitle")}</p>
+      <p style={{fontSize:11,color:C.muted,lineHeight:1.6,margin:0}}>{t("compatibleSignsHintBody")}</p>
     </div>
     <div style={{display:"flex",flexDirection:"column",gap:8}}>
       {findings.map((f,i)=>{const il=INTENSITY_LABELS[f.intensity],si=SIGNS_LIST.find(s=>s.name===f.sign);
@@ -1707,16 +2259,17 @@ function CompatibleSignsView({chart,profile,onBack}){
             <div style={{fontSize:10,color:f.color,fontWeight:700,marginBottom:2}}>{f.theme}{f.houseNum?` · Casa ${f.houseNum}`:""}</div>
             <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:18}}>{si?.glyph||"✨"}</span><span style={{fontSize:14,fontWeight:700,color:C.white}}>{f.sign}</span></div>
           </div>
-          <div style={{flexShrink:0,textAlign:"right"}}><span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:8,background:`${il.color}18`,color:il.color,border:`1px solid ${il.color}33`,display:"block",whiteSpace:"nowrap"}}>{il.label}</span><div style={{fontSize:10,color:C.muted,marginTop:3}}>Ver ›</div></div>
+          <div style={{flexShrink:0,textAlign:"right"}}><span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:8,background:`${il.color}18`,color:il.color,border:`1px solid ${il.color}33`,display:"block",whiteSpace:"nowrap"}}>{il.label}</span><div style={{fontSize:10,color:C.muted,marginTop:3}}>{t("compatibleSignsViewMore")}</div></div>
         </div>;
       })}
     </div>
-    <div style={{marginTop:14,background:`${C.violet}10`,border:`1px solid ${C.violetDim}33`,borderRadius:12,padding:12}}><p style={{fontSize:11,color:C.muted,lineHeight:1.6,margin:0}}>💡 Estos son arquetipos energéticos, no recetas. Lo importante es la resonancia, no solo el signo solar.</p></div>
+    <div style={{marginTop:14,background:`${C.violet}10`,border:`1px solid ${C.violetDim}33`,borderRadius:12,padding:12}}><p style={{fontSize:11,color:C.muted,lineHeight:1.6,margin:0}}>{t("compatibleSignsFooterNote")}</p></div>
   </div>;
 }
 
 // ── SINASTRÍA / AMOR VIEW ────────────────────────────────
 function AmorView({myChart,myProfile,loggedEmail}){
+  const{t}=useLanguage();
   const[mode,setMode]=useState(null);
   const[mySign,setMySign]=useState(myChart?signOf(myChart.planets.Sol.lon):null);
   const[theirSign,setTheirSign]=useState(null);
@@ -1777,37 +2330,37 @@ function AmorView({myChart,myProfile,loggedEmail}){
   }
   function reset(){setMode(null);setResult(null);setTheirSign(null);setSignStep(mySign?2:1);setChartStep(0);setTheirForm({name:"",relacion:"",birthdate:"",birthtime:"12:00",city:null});setSynastryError(null);}
   const inp={width:"100%",background:C.bgDeep,border:`1px solid ${C.border}`,borderRadius:12,padding:"11px 14px",color:C.white,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"};
-  const SECS=[{key:"quimica",label:"Química y Atracción",icon:"💕",color:C.pink},{key:"desafio",label:"Desafíos",icon:"⚡",color:C.warn},{key:"potencial",label:"Potencial a Largo Plazo",icon:"🌟",color:C.violet},{key:"consejo",label:"Consejo para esta Pareja",icon:"🧭",color:C.gold}];
+  const SECS=[{key:"quimica",label:t("amorSecQuimica"),icon:"💕",color:C.pink},{key:"desafio",label:t("amorSecDesafio"),icon:"⚡",color:C.warn},{key:"potencial",label:t("amorSecPotencial"),icon:"🌟",color:C.violet},{key:"consejo",label:t("amorSecConsejo"),icon:"🧭",color:C.gold}];
 
   if(synastryLoading) return <div style={{padding:16,textAlign:"center",paddingTop:60}}>
     <div style={{fontSize:48,marginBottom:14}}>🌌</div>
-    <p style={{color:C.muted,fontSize:13}}>Calculando la carta natal y la sinastría…</p>
-    <p style={{color:C.mutedDark,fontSize:11,marginTop:8}}>Puede tardar unos segundos</p>
+    <p style={{color:C.muted,fontSize:13}}>{t("amorCalculatingSynastry")}</p>
+    <p style={{color:C.mutedDark,fontSize:11,marginTop:8}}>{t("amorMayTakeSeconds")}</p>
   </div>;
 
   if(synastryError) return <div style={{padding:16}}>
-    <button onClick={()=>{setSynastryError(null);}} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>← Volver</button>
+    <button onClick={()=>{setSynastryError(null);}} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>{t("amorBack")}</button>
     <div style={{textAlign:"center",paddingTop:30}}>
       <div style={{fontSize:36,marginBottom:12}}>⚠️</div>
-      <h3 style={{color:C.danger,fontSize:15,fontWeight:700,marginBottom:10}}>No se pudo calcular</h3>
+      <h3 style={{color:C.danger,fontSize:15,fontWeight:700,marginBottom:10}}>{t("amorCouldNotCalculate")}</h3>
       <div style={{background:C.bgDeep,border:`1px solid ${C.danger}44`,borderRadius:10,padding:12,marginBottom:14,textAlign:"left"}}>
         <p style={{color:C.white,fontSize:11,fontFamily:"monospace",margin:0,wordBreak:"break-word"}}>{synastryError}</p>
       </div>
-      <GoldBtn onClick={()=>{setSynastryError(null);setChartStep(1);}}>Intentar de nuevo</GoldBtn>
+      <GoldBtn onClick={()=>{setSynastryError(null);setChartStep(1);}}>{t("amorTryAgain")}</GoldBtn>
     </div>
   </div>;
 
   if(result){
     const sc=result.score>=75?C.success:result.score>=55?C.gold:C.danger;
     return <div style={{padding:16}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><h2 style={{color:C.gold,fontSize:15,fontWeight:700,margin:0}}>Resultado</h2><GhostBtn onClick={reset}>Nueva consulta</GhostBtn></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><h2 style={{color:C.gold,fontSize:15,fontWeight:700,margin:0}}>{t("amorResultTitle")}</h2><GhostBtn onClick={reset}>{t("amorNewQuery")}</GhostBtn></div>
       <Card style={{marginBottom:12}}>
         <div style={{display:"flex",justifyContent:"center",gap:20,marginBottom:14}}>
-          {[{s:result.s1,n:myProfile?.name||"Tú"},{s:result.s2,n:result.theirName||"Ella/Él"}].map((p,i)=>(
+          {[{s:result.s1,n:myProfile?.name||t("amorYou")},{s:result.s2,n:result.theirName||t("amorHerHim")}].map((p,i)=>(
             <div key={i} style={{textAlign:"center"}}><div style={{fontSize:30}}>{SIGNS_LIST.find(x=>x.name===p.s)?.glyph||"✨"}</div><div style={{fontSize:11,color:SIGNS_LIST.find(x=>x.name===p.s)?.color||C.gold,fontWeight:700}}>{p.s}</div><div style={{fontSize:9,color:C.muted}}>{p.n?.split(" ")[0]}</div></div>
           ))}
         </div>
-        <div style={{textAlign:"center",marginBottom:8}}><div style={{fontSize:44,fontWeight:800,color:sc}}>{result.score}%</div><div style={{fontSize:11,color:C.muted}}>compatibilidad</div><div style={{background:C.bgMid,borderRadius:6,height:6,margin:"10px auto 0",maxWidth:200,overflow:"hidden"}}><div style={{width:`${result.score}%`,height:"100%",background:sc,borderRadius:6,transition:"width 1s ease"}} /></div></div>
+        <div style={{textAlign:"center",marginBottom:8}}><div style={{fontSize:44,fontWeight:800,color:sc}}>{result.score}%</div><div style={{fontSize:11,color:C.muted}}>{t("amorCompatibilityLabel")}</div><div style={{background:C.bgMid,borderRadius:6,height:6,margin:"10px auto 0",maxWidth:200,overflow:"hidden"}}><div style={{width:`${result.score}%`,height:"100%",background:sc,borderRadius:6,transition:"width 1s ease"}} /></div></div>
         {result.type==="chart"&&result.interAspects?.length>0&&<SinastriaDetalle interAspects={result.interAspects} s1={result.s1} s2={result.s2} theirName={result.theirName} myProfile={myProfile} />}
       </Card>
       {SECS.map(sec=>{const content=result.texts[sec.key];if(!content)return null;const isOpen=openSec===sec.key;const preview=content.split(/[.!?]/)[0].trim();
@@ -1820,18 +2373,18 @@ function AmorView({myChart,myProfile,loggedEmail}){
   }
   if(mode==="compatibleSigns")return <CompatibleSignsView chart={myChart} profile={myProfile} onBack={()=>setMode(null)} />;
   if(!mode)return <div style={{padding:16}}>
-    <div style={{textAlign:"center",marginBottom:20}}><div style={{fontSize:40,marginBottom:8}}>💕</div><h2 style={{color:C.gold,fontSize:17,fontWeight:800,margin:"0 0 6px"}}>Amor & Compatibilidad</h2><p style={{color:C.muted,fontSize:13,lineHeight:1.6}}>Elige cómo quieres explorar la compatibilidad. Empieza por la primera opción si no estás segura.</p></div>
+    <div style={{textAlign:"center",marginBottom:20}}><div style={{fontSize:40,marginBottom:8}}>💕</div><h2 style={{color:C.gold,fontSize:17,fontWeight:800,margin:"0 0 6px"}}>{t("amorTitle")}</h2><p style={{color:C.muted,fontSize:13,lineHeight:1.6}}>{t("amorSubtitle")}</p></div>
     <div style={{display:"flex",flexDirection:"column",gap:10}}>
 
       {/* OPCIÓN 1 — más simple */}
       <div onClick={()=>setMode("signOnly")} style={{background:C.bgCard,border:`1px solid ${C.violet}44`,borderRadius:16,padding:16,cursor:"pointer",position:"relative"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.violet} onMouseLeave={e=>e.currentTarget.style.borderColor=`${C.violet}44`}>
-        <div style={{position:"absolute",top:-8,left:14,background:C.violet,color:"#fff",fontSize:9,fontWeight:800,padding:"2px 8px",borderRadius:8}}>EMPIEZA AQUÍ</div>
+        <div style={{position:"absolute",top:-8,left:14,background:C.violet,color:"#fff",fontSize:9,fontWeight:800,padding:"2px 8px",borderRadius:8}}>{t("amorStartHere")}</div>
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           <div style={{width:44,height:44,borderRadius:12,background:`${C.violet}18`,border:`1px solid ${C.violet}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>♈</div>
           <div>
-            <div style={{fontSize:14,fontWeight:700,color:C.violet,marginBottom:4}}>Compatibilidad por Signos</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.violet,marginBottom:4}}>{t("amorOption1Title")}</div>
             <div style={{fontSize:12,color:C.muted,lineHeight:1.55}}>
-              Selecciona esta opción si <strong>solo conoces el signo zodiacal</strong> de las dos personas (ej: Tauro y Leo). No necesitas fecha ni hora exacta. Es la más rápida.
+              {t("amorOption1Desc")}
             </div>
           </div>
         </div>
@@ -1842,11 +2395,11 @@ function AmorView({myChart,myProfile,loggedEmail}){
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           <div style={{width:44,height:44,borderRadius:12,background:`${C.teal}18`,border:`1px solid ${C.teal}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🔍</div>
           <div>
-            <div style={{fontSize:14,fontWeight:700,color:C.teal,marginBottom:4}}>Compatibilidad Profunda (con tu propia carta)</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.teal,marginBottom:4}}>{t("amorOption2Title")}</div>
             <div style={{fontSize:12,color:C.muted,lineHeight:1.55}}>
-              Selecciona esta opción si quieres saber <strong>qué signos son compatibles contigo</strong> en general — para matrimonio, romance, intimidad, etc. Solo se necesita <strong>tu</strong> carta natal, no la de otra persona.
+              {t("amorOption2Desc")}
             </div>
-            {!myChart&&<div style={{fontSize:11,color:C.warn,marginTop:6}}>⚠ Necesitas activar tu carta natal primero (botón "Mi Carta" arriba)</div>}
+            {!myChart&&<div style={{fontSize:11,color:C.warn,marginTop:6}}>{t("amorOption2Warn")}</div>}
           </div>
         </div>
       </div>
@@ -1856,20 +2409,20 @@ function AmorView({myChart,myProfile,loggedEmail}){
         <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
           <div style={{width:44,height:44,borderRadius:12,background:`${C.gold}18`,border:`1px solid ${C.gold}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>💑</div>
           <div>
-            <div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:4}}>Compatibilidad con Otra Persona</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:4}}>{t("amorOption3Title")}</div>
             <div style={{fontSize:12,color:C.muted,lineHeight:1.55}}>
-              Selecciona esta opción si quieres comparar tu carta con la de <strong>alguien específico</strong> (tu pareja, un crush, etc). <strong>Necesitas saber su fecha Y hora de nacimiento.</strong> Es el análisis más completo que existe.
+              {t("amorOption3Desc")}
             </div>
-            {!myChart&&<div style={{fontSize:11,color:C.warn,marginTop:6}}>⚠ Necesitas activar tu carta natal primero</div>}
+            {!myChart&&<div style={{fontSize:11,color:C.warn,marginTop:6}}>{t("amorOption3Warn")}</div>}
           </div>
         </div>
       </div>
     </div>
   </div>;
   if(mode==="signOnly")return <div style={{padding:16}}>
-    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={reset} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>← Volver</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>Por Signo Solar</h2></div>
-    <p style={{color:C.muted,fontSize:13,marginBottom:12}}>{signStep===1?"Tu signo:":"Tu signo seleccionado. Ahora elige el de la otra persona:"}</p>
-    {signStep===2&&mySign&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px"}}><span style={{fontSize:22}}>{SIGNS_LIST.find(x=>x.name===mySign)?.glyph}</span><span style={{color:SIGNS_LIST.find(x=>x.name===mySign)?.color,fontWeight:700}}>{mySign}</span>{myChart&&<Pill color={C.teal} style={{fontSize:9}}>tu signo natal</Pill>}<button onClick={()=>setSignStep(1)} style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginLeft:"auto",fontFamily:"inherit"}}>cambiar</button></div>}
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={reset} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{t("amorBack")}</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{t("amorBySignTitle")}</h2></div>
+    <p style={{color:C.muted,fontSize:13,marginBottom:12}}>{signStep===1?t("amorYourSign"):t("amorYourSignSelected")}</p>
+    {signStep===2&&mySign&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px"}}><span style={{fontSize:22}}>{SIGNS_LIST.find(x=>x.name===mySign)?.glyph}</span><span style={{color:SIGNS_LIST.find(x=>x.name===mySign)?.color,fontWeight:700}}>{mySign}</span>{myChart&&<Pill color={C.teal} style={{fontSize:9}}>{t("amorYourNatalSign")}</Pill>}<button onClick={()=>setSignStep(1)} style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginLeft:"auto",fontFamily:"inherit"}}>{t("amorChange")}</button></div>}
     <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:8}}>
       {SIGNS_LIST.filter(s=>signStep===2?s.name!==mySign:true).map(sign=>(
         <button key={sign.name} onClick={()=>{if(signStep===1){setMySign(sign.name);setSignStep(2);}else{setTheirSign(sign.name);calcSignCompat(mySign,sign.name);}}} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 6px",cursor:"pointer",textAlign:"center",fontFamily:"inherit"}} onMouseEnter={e=>e.currentTarget.style.borderColor=sign.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
@@ -1879,16 +2432,16 @@ function AmorView({myChart,myProfile,loggedEmail}){
     </div>
   </div>;
   if(mode==="chartFull"){
-    if(!myChart)return <div style={{padding:16,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>🌌</div><p style={{color:C.muted,fontSize:13,marginBottom:16}}>Primero necesitas tu carta natal. Ve a "Mi Carta ✨" arriba.</p><GhostBtn onClick={reset}>← Volver</GhostBtn></div>;
+    if(!myChart)return <div style={{padding:16,textAlign:"center"}}><div style={{fontSize:40,marginBottom:12}}>🌌</div><p style={{color:C.muted,fontSize:13,marginBottom:16}}>{t("amorNeedChartFirst")}</p><GhostBtn onClick={reset}>{t("amorBack")}</GhostBtn></div>;
 
     // PASO 0: elegir persona guardada o agregar nueva
     if(chartStep===0) return <div style={{padding:16}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={reset} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>← Volver</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>Compatibilidad con Otra Persona</h2></div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={reset} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{t("amorBack")}</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{t("amorOtherPersonTitle")}</h2></div>
 
-      {loadingPeople && <p style={{color:C.muted,fontSize:13,textAlign:"center",padding:20}}>Cargando personas guardadas…</p>}
+      {loadingPeople && <p style={{color:C.muted,fontSize:13,textAlign:"center",padding:20}}>{t("amorLoadingSaved")}</p>}
 
       {!loadingPeople && savedPeople.length > 0 && <>
-        <p style={{color:C.muted,fontSize:12,marginBottom:10}}>Tus personas guardadas:</p>
+        <p style={{color:C.muted,fontSize:12,marginBottom:10}}>{t("amorSavedPeople")}</p>
         <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:18}}>
           {savedPeople.map(p=>(
             <div key={p.id} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
@@ -1912,42 +2465,42 @@ function AmorView({myChart,myProfile,loggedEmail}){
         </div>
       </>}
 
-      <GoldBtn onClick={()=>{setTheirForm({name:"",relacion:"",birthdate:"",birthtime:"12:00",city:null});setChartStep(1);}} style={{width:"100%"}}>➕ Agregar Nueva Persona</GoldBtn>
+      <GoldBtn onClick={()=>{setTheirForm({name:"",relacion:"",birthdate:"",birthtime:"12:00",city:null});setChartStep(1);}} style={{width:"100%"}}>{t("amorAddNewPerson")}</GoldBtn>
     </div>;
 
     const canGo=chartStep===1?theirForm.name.trim().length>1&&!!theirForm.relacion:chartStep===2?!!(theirForm.birthdate&&theirForm.birthtime):!!theirForm.city;
     return <div style={{padding:16}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={chartStep>1?()=>setChartStep(s=>s-1):()=>setChartStep(0)} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>← Volver</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{theirForm._editId?"Editar Persona":"Nueva Persona"}</h2><div style={{marginLeft:"auto",display:"flex",gap:5}}>{[1,2,3].map(s=><div key={s} style={{width:22,height:22,borderRadius:"50%",background:chartStep>=s?C.gold:C.mutedDark,color:chartStep>=s?"#1a0d00":C.muted,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>{s}</div>)}</div></div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={chartStep>1?()=>setChartStep(s=>s-1):()=>setChartStep(0)} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{t("amorBack")}</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{theirForm._editId?t("amorEditPerson"):t("amorNewPerson")}</h2><div style={{marginLeft:"auto",display:"flex",gap:5}}>{[1,2,3].map(s=><div key={s} style={{width:22,height:22,borderRadius:"50%",background:chartStep>=s?C.gold:C.mutedDark,color:chartStep>=s?"#1a0d00":C.muted,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>{s}</div>)}</div></div>
       <Card>
         {chartStep===1&&<>
           <div style={{fontSize:20,textAlign:"center",marginBottom:10}}>👤</div>
-          <h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>¿Quién es esta persona?</h3>
-          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>NOMBRE *</label>
-          <input value={theirForm.name} onChange={e=>setTF("name",e.target.value)} placeholder="Su nombre" autoFocus style={{...inp,marginBottom:12}} />
-          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>RELACIÓN *</label>
+          <h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>{t("amorWhoIsThisPerson")}</h3>
+          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>{t("amorNameLabel")}</label>
+          <input value={theirForm.name} onChange={e=>setTF("name",e.target.value)} placeholder={t("amorNamePlaceholder")} autoFocus style={{...inp,marginBottom:12}} />
+          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>{t("amorRelationLabel")}</label>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            {["Pareja","Crush","Amistad","Familia","Ex","Otro"].map(r=>(
-              <button key={r} onClick={()=>setTF("relacion",r)} style={{background:theirForm.relacion===r?`${C.gold}22`:"transparent",border:`1px solid ${theirForm.relacion===r?C.gold:C.border}`,borderRadius:20,padding:"6px 12px",fontSize:12,fontWeight:600,color:theirForm.relacion===r?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit"}}>{r}</button>
+            {[{val:"Pareja",key:"amorRelPareja"},{val:"Crush",key:"amorRelCrush"},{val:"Amistad",key:"amorRelAmistad"},{val:"Familia",key:"amorRelFamilia"},{val:"Ex",key:"amorRelEx"},{val:"Otro",key:"amorRelOtro"}].map(r=>(
+              <button key={r.val} onClick={()=>setTF("relacion",r.val)} style={{background:theirForm.relacion===r.val?`${C.gold}22`:"transparent",border:`1px solid ${theirForm.relacion===r.val?C.gold:C.border}`,borderRadius:20,padding:"6px 12px",fontSize:12,fontWeight:600,color:theirForm.relacion===r.val?C.gold:C.muted,cursor:"pointer",fontFamily:"inherit"}}>{t(r.key)}</button>
             ))}
           </div>
         </>}
-        {chartStep===2&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📅</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>Fecha y hora de {theirForm.name}</h3>
-          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>FECHA *</label>
+        {chartStep===2&&<><div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📅</div><h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>{t("amorDateOf",{name:theirForm.name})}</h3>
+          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>{t("perfilDateLabel")}</label>
           <input type="date" value={theirForm.birthdate} onChange={e=>setTF("birthdate",e.target.value)} style={{...inp,colorScheme:"dark",marginBottom:12}} />
-          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>HORA * <span style={{color:C.mutedDark,fontWeight:400}}>(si no la sabes, deja 12:00)</span></label>
+          <label style={{fontSize:10,color:C.muted,fontWeight:600,display:"block",marginBottom:5}}>{t("perfilTimeLabel")} <span style={{color:C.mutedDark,fontWeight:400}}>{t("perfilTimeHint")}</span></label>
           <input type="time" value={theirForm.birthtime} onChange={e=>setTF("birthtime",e.target.value)} style={{...inp,colorScheme:"dark"}} />
         </>}
         {chartStep===3&&<>
           <div style={{fontSize:20,textAlign:"center",marginBottom:10}}>📍</div>
-          <h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>Ciudad de nacimiento de {theirForm.name}</h3>
+          <h3 style={{color:C.white,fontSize:14,fontWeight:700,marginBottom:12,textAlign:"center"}}>{t("amorCityOf",{name:theirForm.name})}</h3>
           <CitySearch value={theirForm.city} onChange={c=>setTF("city",c)} />
           {loggedEmail && <label style={{display:"flex",alignItems:"center",gap:8,marginTop:16,cursor:"pointer"}}>
             <input type="checkbox" checked={saveAfter} onChange={e=>setSaveAfter(e.target.checked)} style={{width:16,height:16,cursor:"pointer"}} />
-            <span style={{fontSize:12,color:C.muted}}>Guardar a {theirForm.name||"esta persona"} para no escribir sus datos otra vez</span>
+            <span style={{fontSize:12,color:C.muted}}>{t("amorSaveCheckbox",{name:theirForm.name||t("amorThisPerson")})}</span>
           </label>}
         </>}
       </Card>
-      <div style={{marginTop:14}}>{chartStep<3?<GoldBtn onClick={()=>setChartStep(s=>s+1)} disabled={!canGo} style={{width:"100%"}}>Continuar →</GoldBtn>:<GoldBtn onClick={calcChartCompat} disabled={!canGo} style={{width:"100%"}}>{theirForm._editId?"💾 Guardar Cambios y Calcular":"✨ Calcular Sinastría"}</GoldBtn>}</div>
+      <div style={{marginTop:14}}>{chartStep<3?<GoldBtn onClick={()=>setChartStep(s=>s+1)} disabled={!canGo} style={{width:"100%"}}>{t("amorContinue")}</GoldBtn>:<GoldBtn onClick={calcChartCompat} disabled={!canGo} style={{width:"100%"}}>{theirForm._editId?t("amorSaveAndCalculate"):t("amorCalculateSynastry")}</GoldBtn>}</div>
     </div>;
   }
   return null;
@@ -1955,6 +2508,7 @@ function AmorView({myChart,myProfile,loggedEmail}){
 
 // ── PANTALLA DE CONFIGURACIÓN ─────────────────────────────
 function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
+  const{t}=useLanguage();
   const[loadingPortal,setLoadingPortal]=useState(false);
   const[portalError,setPortalError]=useState("");
 
@@ -1964,7 +2518,7 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
       const url = await sb.getPlanPortalUrl(loggedEmail);
       window.location.href = url;
     }catch(e){
-      setPortalError("No pudimos abrir la gestión de tu plan. Si el problema persiste, escríbenos a atencionalcoientem@gmail.com.");
+      setPortalError(t("settingsPortalError"));
       console.error(e);
     }
     setLoadingPortal(false);
@@ -1981,30 +2535,30 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
   return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:600,overflowY:"auto"}}>
     <div style={{maxWidth:480,margin:"0 auto",minHeight:"100vh",background:C.bg}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",background:C.bgMid,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0}}>
-        <span style={{color:C.gold,fontWeight:700,fontSize:16}}>Configuración</span>
+        <span style={{color:C.gold,fontWeight:700,fontSize:16}}>{t("settingsTitle")}</span>
         <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:22,cursor:"pointer"}}>×</button>
       </div>
 
       <div style={{padding:"20px 16px 8px"}}>
-        <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>Mi perfil</h3>
+        <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>{t("settingsMyProfile")}</h3>
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-          <Row icon="👤" label="Editar mi carta natal" onClick={onEditProfile} />
+          <Row icon="👤" label={t("settingsEditChart")} onClick={onEditProfile} />
           <Row icon="✉️" label={loggedEmail} />
         </div>
       </div>
 
       <div style={{padding:"16px 16px 8px"}}>
-        <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>Mi cuenta</h3>
+        <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>{t("settingsMyAccount")}</h3>
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-          <Row icon="💳" label={loadingPortal?"Abriendo gestión de plan…":"Cambiar plan o cancelar suscripción"} onClick={loadingPortal?undefined:openPlanPortal} />
-          <Row icon="ℹ️" label="Centro de ayuda" onClick={()=>window.open("mailto:atencionalcoientem@gmail.com","_blank")} />
-          <Row icon="✉️" label="Contáctanos" onClick={()=>window.open("mailto:atencionalcoientem@gmail.com","_blank")} />
+          <Row icon="💳" label={loadingPortal?t("settingsOpeningPortal"):t("settingsChangePlan")} onClick={loadingPortal?undefined:openPlanPortal} />
+          <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>window.open("mailto:atencionalcoientem@gmail.com","_blank")} />
+          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>window.open("mailto:atencionalcoientem@gmail.com","_blank")} />
         </div>
         {portalError&&<p style={{color:C.danger,fontSize:12,marginTop:8,lineHeight:1.5}}>{portalError}</p>}
       </div>
 
       <div style={{padding:"16px 16px 32px"}}>
-        <button onClick={onLogout} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:14,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Cerrar sesión</button>
+        <button onClick={onLogout} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:14,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsLogout")}</button>
       </div>
     </div>
   </div>;
@@ -2012,6 +2566,7 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
 
 // ── APP PRINCIPAL ─────────────────────────────────────────
 function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
+  const{t:tr}=useLanguage();
   const[tab,setTab]=useState("inicio");
   const[profile,setProfile]=useState(null);
   const[chart,setChart]=useState(null);
@@ -2060,7 +2615,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
   },[transits,chart]);
 
   async function saveProfile(p){
-    setCalcMsg("Calculando tu carta natal con datos astronómicos precisos…");
+    setCalcMsg(tr("appCalculatingChart"));
     try{
       const lonForTZ=p.lon||-74.0;
       const newChart=await calcChart(p.birthdate,p.birthtime,p.lat||4.7,lonForTZ,p.city);
@@ -2068,7 +2623,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
 
       // Guardar en Supabase ANTES de actualizar la UI, para detectar errores
       if(loggedEmail){
-        setCalcMsg("Guardando tu perfil…");
+        setCalcMsg(tr("appSavingProfile"));
         try{
           await sb.savePerfil(loggedEmail, p);
         }catch(saveErr){
@@ -2088,7 +2643,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
       setShowProfile(false);setCalcMsg("");setTab("carta");
     }catch(e){
       console.error(e);
-      setCalcMsg(`⚠ Error al calcular la carta: ${e.message || e}. Revisa tu conexión e intenta de nuevo.`);
+      setCalcMsg(tr("appCalcError",{error:e.message || e}));
     }
   }
 
@@ -2102,7 +2657,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
   }
 
   const moon=getMoonPhase();
-  const NAV=[{id:"inicio",icon:"🏠",label:"Inicio"},{id:"carta",icon:"🌌",label:"Carta"},{id:"amor",icon:"💕",label:"Amor"},{id:"tarot",icon:"🃏",label:"Tarot"},{id:"mas",icon:"⚙️",label:"Más"}];
+  const NAV=[{id:"inicio",icon:"🏠",label:tr("appNavInicio")},{id:"carta",icon:"🌌",label:tr("appNavCarta")},{id:"amor",icon:"💕",label:tr("appNavAmor")},{id:"tarot",icon:"🃏",label:tr("appNavTarot")},{id:"mas",icon:"⚙️",label:tr("appNavMas")}];
   const MORE=[{id:"horoscopo",icon:"♈",label:"Signos"}];
 
   return <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI', system-ui, sans-serif",maxWidth:480,margin:"0 auto",color:C.white,position:"relative"}}>
@@ -2110,12 +2665,13 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
 
     {/* Header */}
     <header style={{background:C.bgMid,borderBottom:`1px solid ${C.border}`,padding:"11px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
-      <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>✨</span><span style={{fontSize:17,fontWeight:800,color:C.gold,letterSpacing:-0.5}}>Cosmicall</span><span style={{fontSize:11,color:C.muted,marginLeft:2}}>{moon.emoji}</span></div>
+      <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>✨</span><span style={{fontSize:17,fontWeight:800,color:C.gold,letterSpacing:-0.5}}>{tr("appHeaderBrand")}</span><span style={{fontSize:11,color:C.muted,marginLeft:2}}>{moon.emoji}</span></div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         {profile&&<span style={{fontSize:11,color:C.teal,fontWeight:600}}>{chart&&`${chart.planets.Sol.sign} · Asc ${chart.ascSign}`}</span>}
-        {isAdmin&&<button onClick={onOpenAdmin} style={{background:"#e0406020",border:"1px solid #e0406044",borderRadius:20,padding:"5px 10px",color:"#e04060",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>⚙️ Accesos</button>}
-        <button onClick={()=>setShowProfile(true)} style={{background:profile?`${C.teal}22`:`${C.violet}22`,border:`1px solid ${profile?C.teal:C.violetDim}`,borderRadius:20,padding:"5px 12px",color:profile?C.teal:C.violet,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{profile?`✏️ ${profile.name.split(" ")[0]}`:"Mi Carta ✨"}</button>
-        <button onClick={()=>setShowSettings(true)} aria-label="Configuración" style={{background:"none",border:`1px solid ${C.border}`,borderRadius:20,width:30,height:30,color:C.muted,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>⚙️</button>
+        {isAdmin&&<button onClick={onOpenAdmin} style={{background:"#e0406020",border:"1px solid #e0406044",borderRadius:20,padding:"5px 10px",color:"#e04060",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appAdminButton")}</button>}
+        <button onClick={()=>setShowProfile(true)} style={{background:profile?`${C.teal}22`:`${C.violet}22`,border:`1px solid ${profile?C.teal:C.violetDim}`,borderRadius:20,padding:"5px 12px",color:profile?C.teal:C.violet,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{profile?`✏️ ${profile.name.split(" ")[0]}`:tr("appMyChartButton")}</button>
+        <LanguageToggle />
+        <button onClick={()=>setShowSettings(true)} aria-label={tr("appSettingsAria")} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:20,width:30,height:30,color:C.muted,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>⚙️</button>
       </div>
     </header>
 
@@ -2125,18 +2681,18 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
     {/* Modal perfil */}
     {showProfile&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:500,overflowY:"auto"}}>
       <div style={{maxWidth:480,margin:"0 auto",minHeight:"100vh",background:C.bg}}>
-        <div style={{display:"flex",justifyContent:"space-between",padding:"14px 16px",background:C.bgMid,borderBottom:`1px solid ${C.border}`}}><span style={{color:C.gold,fontWeight:700,fontSize:15}}>Perfil Astral</span><button onClick={()=>setShowProfile(false)} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>×</button></div>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"14px 16px",background:C.bgMid,borderBottom:`1px solid ${C.border}`}}><span style={{color:C.gold,fontWeight:700,fontSize:15}}>{tr("appProfileModalTitle")}</span><button onClick={()=>setShowProfile(false)} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>×</button></div>
         {saveError ? (
           <div style={{padding:24}}>
             <div style={{fontSize:36,textAlign:"center",marginBottom:12}}>⚠️</div>
-            <h3 style={{color:C.danger,fontSize:15,fontWeight:700,marginBottom:10,textAlign:"center"}}>No se pudo guardar en la nube</h3>
-            <p style={{color:C.muted,fontSize:12,marginBottom:12,textAlign:"center"}}>Tu carta se calculó bien, pero el guardado falló. Copia este mensaje para revisarlo:</p>
+            <h3 style={{color:C.danger,fontSize:15,fontWeight:700,marginBottom:10,textAlign:"center"}}>{tr("appSaveErrorTitle")}</h3>
+            <p style={{color:C.muted,fontSize:12,marginBottom:12,textAlign:"center"}}>{tr("appSaveErrorDesc")}</p>
             <div style={{background:C.bgDeep,border:`1px solid ${C.danger}44`,borderRadius:10,padding:12,marginBottom:14}}>
               <p style={{color:C.white,fontSize:11,fontFamily:"monospace",margin:0,wordBreak:"break-word",userSelect:"all"}}>{saveError.message}</p>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>{navigator.clipboard?.writeText(saveError.message);}} style={{flex:1,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px",color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>📋 Copiar error</button>
-              <button onClick={dismissSaveError} style={{flex:1,background:C.gold,border:"none",borderRadius:10,padding:"11px",color:"#1a0d00",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Continuar →</button>
+              <button onClick={()=>{navigator.clipboard?.writeText(saveError.message);}} style={{flex:1,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:10,padding:"11px",color:C.white,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appCopyError")}</button>
+              <button onClick={dismissSaveError} style={{flex:1,background:C.gold,border:"none",borderRadius:10,padding:"11px",color:"#1a0d00",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appContinue")}</button>
             </div>
           </div>
         ) : calcMsg?<div style={{textAlign:"center",padding:48}}><div style={{fontSize:40,marginBottom:12}}>🌌</div><p style={{color:C.muted}}>{calcMsg}</p></div>:<PerfilForm onSave={saveProfile} />}
@@ -2149,14 +2705,14 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
       {/* INICIO */}
       {tab==="inicio"&&<div>
         {!profile&&<div style={{margin:"16px 16px 0",background:`${C.violet}15`,border:`1px solid ${C.violetDim}44`,borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div><div style={{fontSize:13,fontWeight:700,color:C.white,marginBottom:2}}>Activa tu carta natal</div><div style={{fontSize:11,color:C.muted}}>Para lecturas personalizadas</div></div>
-          <button onClick={()=>setShowProfile(true)} style={{background:C.gold,color:"#1a0d00",border:"none",borderRadius:24,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Mi Carta ✨</button>
+          <div><div style={{fontSize:13,fontWeight:700,color:C.white,marginBottom:2}}>{tr("appActivateChart")}</div><div style={{fontSize:11,color:C.muted}}>{tr("appActivateChartDesc")}</div></div>
+          <button onClick={()=>setShowProfile(true)} style={{background:C.gold,color:"#1a0d00",border:"none",borderRadius:24,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appMyChartButton")}</button>
         </div>}
         <OracleCard oracle={oracle} profile={profile} chart={chart} transits={transits} setTab={setTab} />
         {transits && <EnergyBars chart={chart} transits={transits} />}
         {profile && chart && <BiorhythmCard birthdate={profile.birthdate} />}
         <div style={{padding:"4px 16px 20px",display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:10}}>
-          {[{icon:"🃏",label:"Tarot",desc:"Tirada de 3 cartas",tab:"tarot",color:C.teal},{icon:"⚙️",label:"Ver más",desc:"Luna, eventos, signos",tab:"horoscopo",color:C.violet}].map(item=>(
+          {[{icon:"🃏",label:tr("appTileTarotLabel"),desc:tr("appTileTarotDesc"),tab:"tarot",color:C.teal},{icon:"⚙️",label:tr("appTileMoreLabel"),desc:tr("appTileMoreDesc"),tab:"horoscopo",color:C.violet}].map(item=>(
             <div key={item.tab} onClick={()=>setTab(item.tab)} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.borderColor=item.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
               <div style={{fontSize:24,marginBottom:8}}>{item.icon}</div><div style={{fontSize:13,fontWeight:700,color:C.white,marginBottom:3}}>{item.label}</div><div style={{fontSize:10,color:C.muted}}>{item.desc}</div>
             </div>
@@ -2166,15 +2722,15 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
 
       {/* CARTA */}
       {tab==="carta"&&<div style={{padding:16}}>
-        <h2 style={{color:C.gold,fontSize:15,fontWeight:700,margin:"0 0 14px"}}>🌌 Tu Carta Natal</h2>
+        <h2 style={{color:C.gold,fontSize:15,fontWeight:700,margin:"0 0 14px"}}>{tr("appNatalChartTitle")}</h2>
         {!profile||!chart?<div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:16,padding:32,textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:12}}>🌌</div><h3 style={{color:C.white,fontSize:15,fontWeight:700,marginBottom:8}}>Carta Natal Personalizada</h3><p style={{color:C.muted,fontSize:13,marginBottom:20,lineHeight:1.6}}>Ingresa tu fecha, hora y lugar de nacimiento para calcular tu carta natal real con los 10 planetas, 12 casas, Lilith y todos los aspectos.</p>
-          <GoldBtn onClick={()=>setShowProfile(true)}>Calcular mi Carta ✨</GoldBtn>
+          <div style={{fontSize:48,marginBottom:12}}>🌌</div><h3 style={{color:C.white,fontSize:15,fontWeight:700,marginBottom:8}}>{tr("appNatalChartCardTitle")}</h3><p style={{color:C.muted,fontSize:13,marginBottom:20,lineHeight:1.6}}>{tr("appNatalChartCardDesc")}</p>
+          <GoldBtn onClick={()=>setShowProfile(true)}>{tr("appCalculateChart")}</GoldBtn>
         </div>:<>
           <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,marginBottom:14}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div><div style={{fontSize:15,fontWeight:700,color:C.gold}}>{profile.name}</div><div style={{fontSize:11,color:C.muted,marginTop:2}}>{profile.birthdate} · {profile.birthtime} · {profile.city}</div></div>
-              <button onClick={()=>setShowProfile(true)} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:10,padding:"5px 10px",color:C.muted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
+              <button onClick={()=>setShowProfile(true)} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:10,padding:"5px 10px",color:C.muted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>{tr("appEdit")}</button>
             </div>
           </div>
           <CartaNatal chart={chart} transits={transits||{}} transitAspects={transitAspects} />
@@ -2353,11 +2909,12 @@ const SIGN_INFO = {
 };
 
 function SignDetailView({ signName, onBack }) {
+  const { t } = useLanguage();
   const info = SIGN_INFO[signName];
   const sign = SIGNS_LIST.find(s => s.name === signName);
   return (
     <div style={{padding:16}}>
-      <button onClick={onBack} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>← Volver a todos los signos</button>
+      <button onClick={onBack} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>{t("signDetailBack")}</button>
 
       <div style={{textAlign:"center",marginBottom:18}}>
         <div style={{fontSize:56,marginBottom:6}}>{sign.glyph}</div>
@@ -2367,38 +2924,38 @@ function SignDetailView({ signName, onBack }) {
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
-        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{info.elementEmoji}</div><div style={{fontSize:10,color:C.muted}}>ELEMENTO</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.element}</div></Card>
-        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{PLANET_SYMBOLS[info.ruler.split(" ")[0]]||"🪐"}</div><div style={{fontSize:10,color:C.muted}}>PLANETA REGENTE</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.ruler}</div></Card>
-        <Card style={{padding:12,textAlign:"center"}}><div style={{width:20,height:20,borderRadius:"50%",background:info.colorHex,margin:"0 auto 4px"}} /><div style={{fontSize:10,color:C.muted}}>COLOR</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.color}</div></Card>
-        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>⚖️</div><div style={{fontSize:10,color:C.muted}}>MODALIDAD</div><div style={{fontSize:12,fontWeight:700,color:C.white}}>{info.modality}</div></Card>
+        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{info.elementEmoji}</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailElement")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.element}</div></Card>
+        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>{PLANET_SYMBOLS[info.ruler.split(" ")[0]]||"🪐"}</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailRulerPlanet")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.ruler}</div></Card>
+        <Card style={{padding:12,textAlign:"center"}}><div style={{width:20,height:20,borderRadius:"50%",background:info.colorHex,margin:"0 auto 4px"}} /><div style={{fontSize:10,color:C.muted}}>{t("signDetailColor")}</div><div style={{fontSize:13,fontWeight:700,color:C.white}}>{info.color}</div></Card>
+        <Card style={{padding:12,textAlign:"center"}}><div style={{fontSize:20,marginBottom:4}}>⚖️</div><div style={{fontSize:10,color:C.muted}}>{t("signDetailModality")}</div><div style={{fontSize:12,fontWeight:700,color:C.white}}>{info.modality}</div></Card>
       </div>
 
       <Card style={{marginBottom:12}}>
-        <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>¿POR QUÉ {info.ruler.split(" ")[0].toUpperCase()}?</div>
-        <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{signName} está regido por <strong style={{color:C.gold}}>{info.ruler}</strong>, {info.rulerWhy}. Por eso esta energía marca tanto su forma de ser.</p>
+        <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>{t("signDetailWhyTitle",{ruler:info.ruler.split(" ")[0].toUpperCase()})}</div>
+        <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{t("signDetailWhyBody",{sign:signName,ruler:info.ruler,rulerWhy:info.rulerWhy})}</p>
       </Card>
 
       <Card style={{marginBottom:12}}>
-        <div style={{fontSize:11,color:C.teal,fontWeight:700,marginBottom:8}}>CARACTERÍSTICAS PRINCIPALES</div>
+        <div style={{fontSize:11,color:C.teal,fontWeight:700,marginBottom:8}}>{t("signDetailTraitsTitle")}</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-          {info.traits.map((t,i)=><Pill key={i} color={sign.color} style={{fontSize:11}}>{t}</Pill>)}
+          {info.traits.map((tr,i)=><Pill key={i} color={sign.color} style={{fontSize:11}}>{tr}</Pill>)}
         </div>
       </Card>
 
       <Card style={{marginBottom:12}}>
-        <div style={{fontSize:11,color:C.success,fontWeight:700,marginBottom:6}}>💪 FORTALEZAS</div>
+        <div style={{fontSize:11,color:C.success,fontWeight:700,marginBottom:6}}>{t("signDetailStrengths")}</div>
         <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:"0 0 14px"}}>{info.strengths}</p>
-        <div style={{fontSize:11,color:C.warn,fontWeight:700,marginBottom:6}}>⚡ DESAFÍOS</div>
+        <div style={{fontSize:11,color:C.warn,fontWeight:700,marginBottom:6}}>{t("signDetailChallenges")}</div>
         <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{info.challenges}</p>
       </Card>
 
       <Card style={{marginBottom:12}}>
-        <div style={{fontSize:11,color:C.pink,fontWeight:700,marginBottom:6}}>💕 CÓMO AMA {signName.toUpperCase()}</div>
+        <div style={{fontSize:11,color:C.pink,fontWeight:700,marginBottom:6}}>{t("signDetailLoveStyle",{sign:signName.toUpperCase()})}</div>
         <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{info.loveStyle}</p>
       </Card>
 
       <Card>
-        <div style={{fontSize:11,color:C.violet,fontWeight:700,marginBottom:8}}>✨ MÁS COMPATIBLE CON</div>
+        <div style={{fontSize:11,color:C.violet,fontWeight:700,marginBottom:8}}>{t("signDetailCompatible")}</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
           {info.compatible.map(s=>{
             const cs = SIGNS_LIST.find(x=>x.name===s);
@@ -2411,11 +2968,12 @@ function SignDetailView({ signName, onBack }) {
 }
 
 function SignosListView() {
+  const { t } = useLanguage();
   const [selected, setSelected] = useState(null);
   if (selected) return <SignDetailView signName={selected} onBack={()=>setSelected(null)} />;
   return (
     <div style={{padding:"0 16px"}}>
-      <p style={{color:C.muted,fontSize:12,marginBottom:14,lineHeight:1.5}}>Toca cualquier signo para ver sus características completas, planeta regente, fortalezas y compatibilidades.</p>
+      <p style={{color:C.muted,fontSize:12,marginBottom:14,lineHeight:1.5}}>{t("signosListHint")}</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:8}}>
         {SIGNS_LIST.map((sign)=>{
           const info = SIGN_INFO[sign.name];
@@ -2434,12 +2992,13 @@ function SignosListView() {
 
 // ── MÁS — Luna, eventos, energía, signos ─────────────────
 function MasView({ profile, chart, transits }) {
+  const { t } = useLanguage();
   const [sub, setSub] = useState("luna");
   const SUBS = [
-    { id:"luna", label:"🌙 Luna" },
-    { id:"eventos", label:"📅 Eventos" },
-    { id:"planetas", label:"🪐 Planetas" },
-    { id:"signos", label:"♈ Signos" },
+    { id:"luna", label:t("masSubLuna") },
+    { id:"eventos", label:t("masSubEventos") },
+    { id:"planetas", label:t("masSubPlanetas") },
+    { id:"signos", label:t("masSubSignos") },
   ];
   return (
     <div>
@@ -2459,7 +3018,7 @@ function MasView({ profile, chart, transits }) {
         {sub==="eventos" && <AstroEvents />}
         {sub==="planetas" && transits && (
           <div style={{margin:"0 16px 14px",background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:16,padding:16}}>
-            <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:12}}>POSICIONES PLANETARIAS DE HOY</div>
+            <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:12}}>{t("masPlanetPositionsTitle")}</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
               {Object.entries(transits).map(([name,lon])=>(
                 <div key={name} style={{display:"flex",gap:8,alignItems:"center",background:C.bgDeep,borderRadius:10,padding:"8px 10px"}}>
@@ -2481,6 +3040,19 @@ export default function App() {
   const [userEmail, setUserEmail] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [language, setLanguageState] = useState(() => {
+    try {
+      const saved = localStorage.getItem("cosmicall_lang");
+      return saved === "en" || saved === "es" ? saved : "es";
+    } catch {
+      return "es";
+    }
+  });
+
+  function setLanguage(next) {
+    setLanguageState(next);
+    try { localStorage.setItem("cosmicall_lang", next); } catch {}
+  }
 
   function handleLogin(email, admin) {
     setUserEmail(email);
@@ -2493,21 +3065,23 @@ export default function App() {
     setShowAdmin(false);
   }
 
-  if (!userEmail) {
-    return <LoginGate onLogin={handleLogin} />;
-  }
-
   return (
-    <>
-      <CosmicallApp
-        loggedEmail={userEmail}
-        isAdmin={isAdmin}
-        onOpenAdmin={() => setShowAdmin(true)}
-        onLogout={handleLogout}
-      />
-      {showAdmin && isAdmin && (
-        <AdminPanel onClose={() => setShowAdmin(false)} />
+    <LanguageContext.Provider value={{ language, setLanguage }}>
+      {!userEmail ? (
+        <LoginGate onLogin={handleLogin} />
+      ) : (
+        <>
+          <CosmicallApp
+            loggedEmail={userEmail}
+            isAdmin={isAdmin}
+            onOpenAdmin={() => setShowAdmin(true)}
+            onLogout={handleLogout}
+          />
+          {showAdmin && isAdmin && (
+            <AdminPanel onClose={() => setShowAdmin(false)} />
+          )}
+        </>
       )}
-    </>
+    </LanguageContext.Provider>
   );
 }
