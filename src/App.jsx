@@ -143,9 +143,9 @@ const sb = {
     });
   },
 
-  // ── STRIPE: portal de facturación (cambiar plan / cancelar) ──
-  async getStripePortalUrl(email) {
-    const r = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session`, {
+  // ── LEMON SQUEEZY: portal de facturación (cambiar plan / cancelar) ──
+  async getPlanPortalUrl(email) {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session-ls`, {
       method: "POST",
       headers: this.headers,
       body: JSON.stringify({ email: email.toLowerCase().trim(), return_url: window.location.href }),
@@ -1961,7 +1961,7 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
   async function openPlanPortal(){
     setLoadingPortal(true); setPortalError("");
     try{
-      const url = await sb.getStripePortalUrl(loggedEmail);
+      const url = await sb.getPlanPortalUrl(loggedEmail);
       window.location.href = url;
     }catch(e){
       setPortalError("No pudimos abrir la gestión de tu plan. Si el problema persiste, escríbenos a atencionalcoientem@gmail.com.");
