@@ -494,6 +494,19 @@ const TRANSLATIONS = {
 
 const LanguageContext = createContext({ language: "es", setLanguage: () => {} });
 
+// ── Display-only translation maps for sign/moon-phase names ──
+// IMPORTANT: these are ONLY for rendering visible text. All internal keys,
+// comparisons, and lookups (chart.planets.Sol.sign, ELEM[...], ORACLE_TEXTS[...],
+// COMPAT_MATRIX, SIGNS_LIST entries, getMoonPhase() phase.name, etc.) must keep
+// using the original Spanish strings exactly as before.
+const SIGN_NAME_EN = { Aries: "Aries", Tauro: "Taurus", Géminis: "Gemini", Cáncer: "Cancer", Leo: "Leo", Virgo: "Virgo", Libra: "Libra", Escorpio: "Scorpio", Sagitario: "Sagittarius", Capricornio: "Capricorn", Acuario: "Aquarius", Piscis: "Pisces" };
+const MOON_PHASE_NAME_EN = { "Luna Nueva": "New Moon", "Creciente": "Waxing Crescent", "Cuarto Creciente": "First Quarter", "Gibosa Creciente": "Waxing Gibbous", "Gibosa": "Waxing Gibbous", "Luna Llena": "Full Moon", "Gibosa Menguante": "Waning Gibbous", "Gibosa Men.": "Waning Gibbous", "Cuarto Menguante": "Last Quarter", "Menguante": "Waning Crescent" };
+const MOON_ENERGY_EN = { "Siembra intenciones": "Plant intentions", "Toma acción": "Take action", "Decisión y compromiso": "Decision and commitment", "Refinamiento": "Refinement", "Culminación y revelación": "Culmination and revelation", "Gratitud y compartir": "Gratitude and sharing", "Soltar y perdonar": "Letting go and forgiving", "Descanso y reflexión": "Rest and reflection" };
+
+function signLabel(name, language) { return language === "en" ? (SIGN_NAME_EN[name] || name) : name; }
+function moonPhaseLabel(name, language) { return language === "en" ? (MOON_PHASE_NAME_EN[name] || name) : name; }
+function moonEnergyLabel(text, language) { return language === "en" ? (MOON_ENERGY_EN[text] || text) : text; }
+
 function interpolate(str, vars) {
   if (!vars) return str;
   return str.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
@@ -1777,7 +1790,7 @@ function getMonthMoonPhases() {
 }
 
 // ── PRÓXIMOS EVENTOS ASTRONÓMICOS ────────────────────────
-function getUpcomingEvents() {
+function getUpcomingEvents(language) {
   const now = new Date();
   const events = [];
 
@@ -1817,7 +1830,7 @@ function getUpcomingEvents() {
     events.push({
       date: nextSignChange.date,
       daysUntil,
-      title: `${nextSignChange.planet} entra en ${nextSignChange.sign}`,
+      title: `${nextSignChange.planet} entra en ${signLabel(nextSignChange.sign, language)}`,
       desc: nextSignChange.desc,
       emoji: nextSignChange.emoji,
       color: nextSignChange.color,
@@ -1831,7 +1844,7 @@ function getUpcomingEvents() {
     events.push({
       date: nextRetro.start,
       daysUntil,
-      title: `${nextRetro.planet} Retrógrado en ${nextRetro.sign}`,
+      title: `${nextRetro.planet} Retrógrado en ${signLabel(nextRetro.sign, language)}`,
       desc: `${nextRetro.planet} retrógrado puede traer retrasos y revisiones. Buen momento para reflexionar, revisar y no firmar contratos importantes.`,
       emoji: nextRetro.planet === "Mercurio" ? "☿" : "♀",
       color: "#9b6dff",
@@ -1842,12 +1855,13 @@ function getUpcomingEvents() {
   const nextFull = fullMoons.find(d => d > now);
   if (nextFull) {
     const sign = signOf(moonLonOnDate(nextFull));
+    const signDisp = signLabel(sign, language);
     const daysUntil = Math.ceil((nextFull - now) / (1000*60*60*24));
     events.push({
       date: nextFull,
       daysUntil,
-      title: `Luna Llena en ${sign}`,
-      desc: `La Luna Llena en ${sign} ilumina el área de tu carta relacionada con ${sign}. Momento de culminación y revelación emocional.`,
+      title: `Luna Llena en ${signDisp}`,
+      desc: `La Luna Llena en ${signDisp} ilumina el área de tu carta relacionada con ${signDisp}. Momento de culminación y revelación emocional.`,
       emoji: "🌕",
       color: "#f0c040",
     });
@@ -1859,7 +1873,7 @@ function getUpcomingEvents() {
     events.push({
       date: venusRetro.start,
       daysUntil,
-      title: `Venus Retrógrado en ${venusRetro.sign}`,
+      title: `Venus Retrógrado en ${signLabel(venusRetro.sign, language)}`,
       desc: "Venus retrógrado invita a revisar relaciones y valores. Puede traer ex-parejas o replanteamientos del amor. Evita cirugías estéticas y compromisos nuevos.",
       emoji: "♀",
       color: "#e056a0",
@@ -1884,8 +1898,8 @@ function getUpcomingEvents() {
 }
 
 function AstroEvents() {
-  const{t}=useLanguage();
-  const events = getUpcomingEvents();
+  const{t,language}=useLanguage();
+  const events = getUpcomingEvents(language);
   return (
     <div style={{margin:"0 16px 14px"}}>
       <div style={{fontSize:11,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:10}}>{t("astroEventsTitle")}</div>
@@ -1956,12 +1970,12 @@ function getLunarTips() {
 }
 
 function LunarTips() {
-  const{t}=useLanguage();
+  const{t,language}=useLanguage();
   const tips = getLunarTips();
   const moon = getMoonPhase();
   return (
     <div style={{margin:"0 16px 14px"}}>
-      <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:10}}>{t("lunarTipsTitle",{moon:moon.name.toUpperCase()})}</div>
+      <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:1,marginBottom:10}}>{t("lunarTipsTitle",{moon:moonPhaseLabel(moon.name,language).toUpperCase()})}</div>
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {tips.map((tip,i)=>(
           <div key={i} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
@@ -1976,16 +1990,16 @@ function LunarTips() {
 
 // ── LUNA VISUAL DEL MES ──────────────────────────────────
 function MoonCalendar() {
-  const{t}=useLanguage();
+  const{t,language}=useLanguage();
   const phases = getMonthMoonPhases();
   const moon = getMoonPhase();
   return (
     <div style={{margin:"0 16px 14px",background:"#1e1240",border:"1px solid #2e1f5e",borderRadius:16,padding:16}}>
       <div style={{textAlign:"center",marginBottom:14}}>
         <div style={{fontSize:48,lineHeight:1,marginBottom:6}}>{moon.emoji}</div>
-        <div style={{fontSize:14,fontWeight:700,color:"#f0c040"}}>{moon.name}</div>
-        <div style={{fontSize:11,color:"#9080b0",marginTop:2}}>en {signOf(moonLonOnDate(new Date()))}</div>
-        <div style={{fontSize:11,color:"#9080b0",marginTop:2}}>{moon.energy}</div>
+        <div style={{fontSize:14,fontWeight:700,color:"#f0c040"}}>{moonPhaseLabel(moon.name,language)}</div>
+        <div style={{fontSize:11,color:"#9080b0",marginTop:2}}>en {signLabel(signOf(moonLonOnDate(new Date())),language)}</div>
+        <div style={{fontSize:11,color:"#9080b0",marginTop:2}}>{moonEnergyLabel(moon.energy,language)}</div>
       </div>
       {phases.length > 0 && (
         <>
@@ -1994,7 +2008,7 @@ function MoonCalendar() {
             {phases.map((p,i)=>(
               <div key={i} style={{textAlign:"center",flex:1}}>
                 <div style={{fontSize:24,marginBottom:4}}>{p.emoji}</div>
-                <div style={{fontSize:9,color:"#f8f4ff",fontWeight:600,lineHeight:1.3}}>{p.name}</div>
+                <div style={{fontSize:9,color:"#f8f4ff",fontWeight:600,lineHeight:1.3}}>{moonPhaseLabel(p.name,language)}</div>
                 <div style={{fontSize:9,color:"#4a3870",marginTop:2}}>{p.date}</div>
               </div>
             ))}
@@ -2067,7 +2081,7 @@ function SinastriaDetalle({ interAspects, s1, s2, theirName, myProfile }) {
 }
 
 function OracleCard({oracle,profile,chart,transits,setTab}){
-  const{t}=useLanguage();
+  const{t,language}=useLanguage();
   const[openSec,setOpenSec]=useState(null);
   if(!oracle)return null;
   const ACC=[{key:"energia",label:t("oracleSectionEnergia"),icon:"⚡",color:C.gold},{key:"amor",label:t("oracleSectionAmor"),icon:"💕",color:C.pink},{key:"trabajo",label:t("oracleSectionTrabajo"),icon:"💼",color:C.teal}];
@@ -2089,9 +2103,9 @@ function OracleCard({oracle,profile,chart,transits,setTab}){
       <div style={{fontSize:10,color:C.muted,fontWeight:700,letterSpacing:1.5,marginBottom:6}}>{new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"}).toUpperCase()}</div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
         <span style={{fontSize:22}}>{oracle.moon.emoji}</span>
-        <div><span style={{fontSize:13,color:C.gold,fontWeight:700}}>{oracle.moon.name}</span><span style={{fontSize:11,color:C.muted,marginLeft:8}}>{oracle.moon.energy}</span></div>
+        <div><span style={{fontSize:13,color:C.gold,fontWeight:700}}>{moonPhaseLabel(oracle.moon.name,language)}</span><span style={{fontSize:11,color:C.muted,marginLeft:8}}>{moonEnergyLabel(oracle.moon.energy,language)}</span></div>
       </div>
-      {profile&&chart&&<div style={{display:"flex",justifyContent:"center",gap:6,marginTop:10,flexWrap:"wrap"}}><Pill color={C.gold}>☀️ {chart.planets.Sol.sign}</Pill><Pill color={C.cyan}>🌙 {chart.planets.Luna.sign}</Pill><Pill color={C.violet}>↑ {chart.ascSign}</Pill></div>}
+      {profile&&chart&&<div style={{display:"flex",justifyContent:"center",gap:6,marginTop:10,flexWrap:"wrap"}}><Pill color={C.gold}>☀️ {signLabel(chart.planets.Sol.sign,language)}</Pill><Pill color={C.cyan}>🌙 {signLabel(chart.planets.Luna.sign,language)}</Pill><Pill color={C.violet}>↑ {signLabel(chart.ascSign,language)}</Pill></div>}
     </div>
     <div style={{margin:"0 16px 12px"}}>
       <div style={{background:`linear-gradient(135deg, ${C.violet}22, ${C.pink}18)`,border:`1px solid ${C.violet}55`,borderRadius:18,padding:"18px"}}>
@@ -2216,7 +2230,7 @@ function CartaNatal({chart,transits,transitAspects}){
 
   return <div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:8,marginBottom:14}}>
-      {[{label:t("cartaAscendant"),value:`${chart.ascSign} ${chart.ascDeg}°`,glyph:"↑",color:C.gold,sub:t("cartaAscSub")},{label:t("cartaMidheaven"),value:`${chart.mcSign} ${chart.mcDeg}°`,glyph:"MC",color:C.violet,sub:t("cartaMcSub")},{label:t("cartaNorthNode"),value:chart.nnSign,glyph:"☊",color:C.teal,sub:t("cartaNnSub")}].map(item=>(
+      {[{label:t("cartaAscendant"),value:`${signLabel(chart.ascSign,language)} ${chart.ascDeg}°`,glyph:"↑",color:C.gold,sub:t("cartaAscSub")},{label:t("cartaMidheaven"),value:`${signLabel(chart.mcSign,language)} ${chart.mcDeg}°`,glyph:"MC",color:C.violet,sub:t("cartaMcSub")},{label:t("cartaNorthNode"),value:signLabel(chart.nnSign,language),glyph:"☊",color:C.teal,sub:t("cartaNnSub")}].map(item=>(
         <Card key={item.label} style={{textAlign:"center",padding:12}}>
           <div style={{fontSize:16,color:item.color,fontWeight:700,marginBottom:2}}>{item.glyph}</div>
           <div style={{fontSize:12,fontWeight:700,color:item.color}}>{item.value}</div>
@@ -2244,7 +2258,7 @@ function CartaNatal({chart,transits,transitAspects}){
             <div style={{fontSize:20,width:28,textAlign:"center"}}>{PLANET_SYMBOLS[name]}</div>
             <div style={{flex:1}}>
               <div style={{fontSize:13,fontWeight:700,color:PC[name]||C.white}}>{name}</div>
-              <div style={{fontSize:11,color:C.muted}}>{data.sign} {data.deg}° · Casa {data.house}</div>
+              <div style={{fontSize:11,color:C.muted}}>{signLabel(data.sign,language)} {data.deg}° · Casa {data.house}</div>
             </div>
             <div style={{fontSize:18}}>{SIGN_GLYPHS[data.signIdx]}</div>
             <div style={{fontSize:12,color:C.muted,marginLeft:4}}>{isOpen?"▾":"▸"}</div>
@@ -2253,7 +2267,7 @@ function CartaNatal({chart,transits,transitAspects}){
             <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
               {isEn
                 ? <>
-                    <strong style={{color:PC[name]}}>{name}</strong> represents {PMEAN[name]}. In your chart it's in <strong style={{color:C.white}}>{data.sign}</strong>, so that energy expresses itself in the style of {data.sign}. And it falls in your <strong style={{color:C.white}}>House {data.house}</strong>, the area of {HSIMP[data.house-1]}.
+                    <strong style={{color:PC[name]}}>{name}</strong> represents {PMEAN[name]}. In your chart it's in <strong style={{color:C.white}}>{signLabel(data.sign,language)}</strong>, so that energy expresses itself in the style of {signLabel(data.sign,language)}. And it falls in your <strong style={{color:C.white}}>House {data.house}</strong>, the area of {HSIMP[data.house-1]}.
                   </>
                 : <>
                     <strong style={{color:PC[name]}}>{name}</strong> representa {PMEAN[name]}. En tu carta está en <strong style={{color:C.white}}>{data.sign}</strong>, así que esa energía se expresa con el estilo de {data.sign}. Y cae en tu <strong style={{color:C.white}}>Casa {data.house}</strong>, el área de {HSIMP[data.house-1]}.
@@ -2265,12 +2279,12 @@ function CartaNatal({chart,transits,transitAspects}){
       <div onClick={()=>setExpandedPlanet(expandedPlanet==="Lilith"?null:"Lilith")} style={{background:C.bgCard,border:`1px solid ${expandedPlanet==="Lilith"?C.violet+"66":C.border}`,borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{fontSize:20,width:28,textAlign:"center"}}>🌑</div>
-          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.violet}}>{t("cartaLilithTitle")}</div><div style={{fontSize:11,color:C.muted}}>{chart.lilithSign} {chart.lilithDeg}° · Casa {chart.lilithHouse}</div></div>
+          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.violet}}>{t("cartaLilithTitle")}</div><div style={{fontSize:11,color:C.muted}}>{signLabel(chart.lilithSign,language)} {chart.lilithDeg}° · Casa {chart.lilithHouse}</div></div>
           <div style={{fontSize:12,color:C.muted}}>{expandedPlanet==="Lilith"?"▾":"▸"}</div>
         </div>
         {expandedPlanet==="Lilith"&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
           <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>{isEn
-            ? <>Lilith isn't a real planet but a mathematical point: it represents your most instinctive, wild, and sometimes taboo side — what society asked you to repress. In <strong style={{color:C.white}}>{chart.lilithSign}</strong> (House {chart.lilithHouse}), that repressed energy seeks to express itself in the area of {HSIMP[chart.lilithHouse-1]}.</>
+            ? <>Lilith isn't a real planet but a mathematical point: it represents your most instinctive, wild, and sometimes taboo side — what society asked you to repress. In <strong style={{color:C.white}}>{signLabel(chart.lilithSign,language)}</strong> (House {chart.lilithHouse}), that repressed energy seeks to express itself in the area of {HSIMP[chart.lilithHouse-1]}.</>
             : <>Lilith no es un planeta real sino un punto matemático: representa tu lado más instintivo, salvaje y a veces tabú — lo que la sociedad te pidió reprimir. En <strong style={{color:C.white}}>{chart.lilithSign}</strong> (Casa {chart.lilithHouse}), esa energía reprimida busca expresarse en el área de {HSIMP[chart.lilithHouse-1]}.</>}</p>
         </div>}
       </div>
@@ -2279,7 +2293,7 @@ function CartaNatal({chart,transits,transitAspects}){
     {sec==="casas"&&<div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:8}}>
       {chart.cusps.map((cusp,i)=>{const planetsHere=Object.entries(chart.planets).filter(([,d])=>d.house===i+1).map(([n])=>n);
         return <Card key={i} style={{padding:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}><div style={{fontSize:10,color:C.gold,fontWeight:700}}>{t("cartaHouse",{n:i+1}).toUpperCase()}</div><div style={{fontSize:13,color:C.white,fontWeight:700}}>{signOf(cusp)}</div></div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}><div style={{fontSize:10,color:C.gold,fontWeight:700}}>{t("cartaHouse",{n:i+1}).toUpperCase()}</div><div style={{fontSize:13,color:C.white,fontWeight:700}}>{signLabel(signOf(cusp),language)}</div></div>
           <div style={{fontSize:10,color:C.muted,lineHeight:1.4,marginBottom:planetsHere.length?6:0}}>{HSIMP[i]}</div>
           {planetsHere.length>0&&<div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{planetsHere.map(p=><Pill key={p} color={PC[p]||C.muted} style={{fontSize:9,padding:"1px 6px"}}>{p}</Pill>)}</div>}
         </Card>;
@@ -2315,7 +2329,7 @@ function CartaNatal({chart,transits,transitAspects}){
           return <div key={i} onClick={()=>setExpandedAspect(isOpen?null:`t${i}`)}
             style={{background:C.bgCard,border:`1px solid ${isOpen?C.gold+"66":C.border}`,borderRadius:12,padding:"10px 14px",cursor:"pointer"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}><div style={{fontSize:12,fontWeight:700,color:C.white}}>{asp.transit} {asp.symbol} {asp.natal} natal</div><Pill color={parseFloat(asp.exact)<2?C.gold:C.violet} style={{fontSize:9}}>{parseFloat(asp.exact)<2?t("cartaExact"):`${asp.exact}°`}</Pill></div>
-            <div style={{fontSize:11,color:C.muted}}>{asp.name} · {asp.transit} en {asp.transitSign} {asp.transitDeg}°</div>
+            <div style={{fontSize:11,color:C.muted}}>{asp.name} · {asp.transit} en {signLabel(asp.transitSign,language)} {asp.transitDeg}°</div>
             {isOpen&&<div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
               <p style={{fontSize:12,color:C.white,lineHeight:1.65,margin:0}}>
                 {isEn
@@ -2327,7 +2341,7 @@ function CartaNatal({chart,transits,transitAspects}){
         })}</div>}
       <div><div style={{fontSize:11,color:C.muted,fontWeight:700,marginBottom:8}}>{t("cartaTodaySkyPositions")}</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:6}}>{Object.entries(transits).map(([name,lon])=>(
-          <div key={name} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 12px",display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:14}}>{PLANET_SYMBOLS[name]}</span><div><div style={{fontSize:11,fontWeight:700,color:C.white}}>{name}</div><div style={{fontSize:10,color:C.muted}}>{signOf(lon)} {degInSign(lon)}°</div></div></div>
+          <div key={name} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:10,padding:"8px 12px",display:"flex",gap:8,alignItems:"center"}}><span style={{fontSize:14}}>{PLANET_SYMBOLS[name]}</span><div><div style={{fontSize:11,fontWeight:700,color:C.white}}>{name}</div><div style={{fontSize:10,color:C.muted}}>{signLabel(signOf(lon),language)} {degInSign(lon)}°</div></div></div>
         ))}</div>
       </div>
     </div>}
@@ -2384,7 +2398,7 @@ function TarotView(){
 
 // ── COMPATIBLE SIGNS VIEW ────────────────────────────────
 function CompatibleSignsView({chart,profile,onBack}){
-  const{t}=useLanguage();
+  const{t,language}=useLanguage();
   const[sel,setSel]=useState(null);
   const findings=buildCompatibleSignsData(chart);
   if(sel)return <div style={{padding:16}}>
@@ -2392,7 +2406,7 @@ function CompatibleSignsView({chart,profile,onBack}){
     <div style={{background:C.bgCard,border:`1px solid ${sel.color}44`,borderRadius:16,padding:16,marginBottom:14}}>
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
         <div style={{width:42,height:42,borderRadius:12,background:`${sel.color}20`,border:`1px solid ${sel.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{sel.icon}</div>
-        <div><div style={{fontSize:11,color:sel.color,fontWeight:700}}>{sel.theme.toUpperCase()}{sel.houseNum?` · CASA ${sel.houseNum}`:""}</div><div style={{fontSize:18,fontWeight:800,color:C.white}}>{SIGNS_LIST.find(s=>s.name===sel.sign)?.glyph||"✨"} {sel.sign}</div></div>
+        <div><div style={{fontSize:11,color:sel.color,fontWeight:700}}>{sel.theme.toUpperCase()}{sel.houseNum?` · CASA ${sel.houseNum}`:""}</div><div style={{fontSize:18,fontWeight:800,color:C.white}}>{SIGNS_LIST.find(s=>s.name===sel.sign)?.glyph||"✨"} {signLabel(sel.sign,language)}</div></div>
         <span style={{marginLeft:"auto",fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:10,background:`${INTENSITY_LABELS[sel.intensity].color}22`,color:INTENSITY_LABELS[sel.intensity].color,border:`1px solid ${INTENSITY_LABELS[sel.intensity].color}44`}}>{INTENSITY_LABELS[sel.intensity].label}</span>
       </div>
       <p style={{fontSize:13,color:C.white,lineHeight:1.7,margin:0}}>{sel.desc}</p>
@@ -2401,7 +2415,7 @@ function CompatibleSignsView({chart,profile,onBack}){
   return <div style={{padding:16}}>
     <button onClick={onBack} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit",marginBottom:14}}>{t("amorBack")}</button>
     <div style={{marginBottom:16}}><h2 style={{color:C.gold,fontSize:16,fontWeight:800,margin:"0 0 6px"}}>{t("compatibleSignsTitle")}</h2><p style={{color:C.muted,fontSize:12,lineHeight:1.5}}>{t("compatibleSignsSubtitle")}</p>
-      <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}><Pill color={C.gold}>☀️ {chart.planets.Sol.sign}</Pill><Pill color={C.pink}>♀ Venus {chart.planets.Venus.sign}</Pill><Pill color={C.warn}>♂ Marte {chart.planets.Marte.sign}</Pill></div>
+      <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}><Pill color={C.gold}>☀️ {signLabel(chart.planets.Sol.sign,language)}</Pill><Pill color={C.pink}>♀ Venus {signLabel(chart.planets.Venus.sign,language)}</Pill><Pill color={C.warn}>♂ Marte {signLabel(chart.planets.Marte.sign,language)}</Pill></div>
     </div>
     <div style={{background:`${C.gold}10`,border:`1px solid ${C.goldDim}44`,borderRadius:12,padding:"12px 14px",marginBottom:14}}>
       <p style={{fontSize:11,color:C.gold,fontWeight:700,margin:"0 0 4px"}}>{t("compatibleSignsHintTitle")}</p>
@@ -2413,7 +2427,7 @@ function CompatibleSignsView({chart,profile,onBack}){
           <div style={{width:38,height:38,borderRadius:10,background:`${f.color}18`,border:`1px solid ${f.color}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{f.icon}</div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:10,color:f.color,fontWeight:700,marginBottom:2}}>{f.theme}{f.houseNum?` · Casa ${f.houseNum}`:""}</div>
-            <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:18}}>{si?.glyph||"✨"}</span><span style={{fontSize:14,fontWeight:700,color:C.white}}>{f.sign}</span></div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:18}}>{si?.glyph||"✨"}</span><span style={{fontSize:14,fontWeight:700,color:C.white}}>{signLabel(f.sign,language)}</span></div>
           </div>
           <div style={{flexShrink:0,textAlign:"right"}}><span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:8,background:`${il.color}18`,color:il.color,border:`1px solid ${il.color}33`,display:"block",whiteSpace:"nowrap"}}>{il.label}</span><div style={{fontSize:10,color:C.muted,marginTop:3}}>{t("compatibleSignsViewMore")}</div></div>
         </div>;
@@ -2513,7 +2527,7 @@ function AmorView({myChart,myProfile,loggedEmail}){
       <Card style={{marginBottom:12}}>
         <div style={{display:"flex",justifyContent:"center",gap:20,marginBottom:14}}>
           {[{s:result.s1,n:myProfile?.name||t("amorYou")},{s:result.s2,n:result.theirName||t("amorHerHim")}].map((p,i)=>(
-            <div key={i} style={{textAlign:"center"}}><div style={{fontSize:30}}>{SIGNS_LIST.find(x=>x.name===p.s)?.glyph||"✨"}</div><div style={{fontSize:11,color:SIGNS_LIST.find(x=>x.name===p.s)?.color||C.gold,fontWeight:700}}>{p.s}</div><div style={{fontSize:9,color:C.muted}}>{p.n?.split(" ")[0]}</div></div>
+            <div key={i} style={{textAlign:"center"}}><div style={{fontSize:30}}>{SIGNS_LIST.find(x=>x.name===p.s)?.glyph||"✨"}</div><div style={{fontSize:11,color:SIGNS_LIST.find(x=>x.name===p.s)?.color||C.gold,fontWeight:700}}>{signLabel(p.s,language)}</div><div style={{fontSize:9,color:C.muted}}>{p.n?.split(" ")[0]}</div></div>
           ))}
         </div>
         <div style={{textAlign:"center",marginBottom:8}}><div style={{fontSize:44,fontWeight:800,color:sc}}>{result.score}%</div><div style={{fontSize:11,color:C.muted}}>{t("amorCompatibilityLabel")}</div><div style={{background:C.bgMid,borderRadius:6,height:6,margin:"10px auto 0",maxWidth:200,overflow:"hidden"}}><div style={{width:`${result.score}%`,height:"100%",background:sc,borderRadius:6,transition:"width 1s ease"}} /></div></div>
@@ -2578,11 +2592,11 @@ function AmorView({myChart,myProfile,loggedEmail}){
   if(mode==="signOnly")return <div style={{padding:16}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={reset} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{t("amorBack")}</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{t("amorBySignTitle")}</h2></div>
     <p style={{color:C.muted,fontSize:13,marginBottom:12}}>{signStep===1?t("amorYourSign"):t("amorYourSignSelected")}</p>
-    {signStep===2&&mySign&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px"}}><span style={{fontSize:22}}>{SIGNS_LIST.find(x=>x.name===mySign)?.glyph}</span><span style={{color:SIGNS_LIST.find(x=>x.name===mySign)?.color,fontWeight:700}}>{mySign}</span>{myChart&&<Pill color={C.teal} style={{fontSize:9}}>{t("amorYourNatalSign")}</Pill>}<button onClick={()=>setSignStep(1)} style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginLeft:"auto",fontFamily:"inherit"}}>{t("amorChange")}</button></div>}
+    {signStep===2&&mySign&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px"}}><span style={{fontSize:22}}>{SIGNS_LIST.find(x=>x.name===mySign)?.glyph}</span><span style={{color:SIGNS_LIST.find(x=>x.name===mySign)?.color,fontWeight:700}}>{signLabel(mySign,language)}</span>{myChart&&<Pill color={C.teal} style={{fontSize:9}}>{t("amorYourNatalSign")}</Pill>}<button onClick={()=>setSignStep(1)} style={{background:"none",border:"none",color:C.muted,fontSize:11,cursor:"pointer",marginLeft:"auto",fontFamily:"inherit"}}>{t("amorChange")}</button></div>}
     <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:8}}>
       {SIGNS_LIST.filter(s=>signStep===2?s.name!==mySign:true).map(sign=>(
         <button key={sign.name} onClick={()=>{if(signStep===1){setMySign(sign.name);setSignStep(2);}else{setTheirSign(sign.name);calcSignCompat(mySign,sign.name);}}} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 6px",cursor:"pointer",textAlign:"center",fontFamily:"inherit"}} onMouseEnter={e=>e.currentTarget.style.borderColor=sign.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-          <div style={{fontSize:22,marginBottom:4}}>{sign.glyph}</div><div style={{fontSize:9,color:C.muted,fontWeight:600}}>{sign.name}</div>
+          <div style={{fontSize:22,marginBottom:4}}>{sign.glyph}</div><div style={{fontSize:9,color:C.muted,fontWeight:600}}>{signLabel(sign.name,language)}</div>
         </button>
       ))}
     </div>
@@ -2823,7 +2837,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
     <header style={{background:C.bgMid,borderBottom:`1px solid ${C.border}`,padding:"11px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
       <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>✨</span><span style={{fontSize:17,fontWeight:800,color:C.gold,letterSpacing:-0.5}}>{tr("appHeaderBrand")}</span><span style={{fontSize:11,color:C.muted,marginLeft:2}}>{moon.emoji}</span></div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
-        {profile&&<span style={{fontSize:11,color:C.teal,fontWeight:600}}>{chart&&`${chart.planets.Sol.sign} · Asc ${chart.ascSign}`}</span>}
+        {profile&&<span style={{fontSize:11,color:C.teal,fontWeight:600}}>{chart&&`${signLabel(chart.planets.Sol.sign,language)} · Asc ${signLabel(chart.ascSign,language)}`}</span>}
         {isAdmin&&<button onClick={onOpenAdmin} style={{background:"#e0406020",border:"1px solid #e0406044",borderRadius:20,padding:"5px 10px",color:"#e04060",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appAdminButton")}</button>}
         <button onClick={()=>setShowProfile(true)} style={{background:profile?`${C.teal}22`:`${C.violet}22`,border:`1px solid ${profile?C.teal:C.violetDim}`,borderRadius:20,padding:"5px 12px",color:profile?C.teal:C.violet,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{profile?`✏️ ${profile.name.split(" ")[0]}`:tr("appMyChartButton")}</button>
         <LanguageToggle />
@@ -3225,7 +3239,7 @@ function SignDetailView({ signName, onBack }) {
 
       <div style={{textAlign:"center",marginBottom:18}}>
         <div style={{fontSize:56,marginBottom:6}}>{sign.glyph}</div>
-        <div style={{fontSize:22,fontWeight:800,color:sign.color}}>{signName}</div>
+        <div style={{fontSize:22,fontWeight:800,color:sign.color}}>{signLabel(signName,language)}</div>
         <div style={{fontSize:12,color:C.muted,marginTop:2}}>{info.dates}</div>
         <div style={{fontSize:13,color:C.gold,fontStyle:"italic",marginTop:6}}>{info.keyword}</div>
       </div>
@@ -3239,7 +3253,7 @@ function SignDetailView({ signName, onBack }) {
 
       <Card style={{marginBottom:12}}>
         <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>{t("signDetailWhyTitle",{ruler:rulerDisplay.toUpperCase()})}</div>
-        <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{t("signDetailWhyBody",{sign:signName,ruler:rulerDisplay,rulerWhy:info.rulerWhy})}</p>
+        <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{t("signDetailWhyBody",{sign:signLabel(signName,language),ruler:rulerDisplay,rulerWhy:info.rulerWhy})}</p>
       </Card>
 
       <Card style={{marginBottom:12}}>
@@ -3257,7 +3271,7 @@ function SignDetailView({ signName, onBack }) {
       </Card>
 
       <Card style={{marginBottom:12}}>
-        <div style={{fontSize:11,color:C.pink,fontWeight:700,marginBottom:6}}>{t("signDetailLoveStyle",{sign:signName.toUpperCase()})}</div>
+        <div style={{fontSize:11,color:C.pink,fontWeight:700,marginBottom:6}}>{t("signDetailLoveStyle",{sign:signLabel(signName,language).toUpperCase()})}</div>
         <p style={{fontSize:13,color:C.white,lineHeight:1.6,margin:0}}>{info.loveStyle}</p>
       </Card>
 
@@ -3266,7 +3280,7 @@ function SignDetailView({ signName, onBack }) {
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
           {info.compatible.map(s=>{
             const cs = SIGNS_LIST.find(x=>x.name===s);
-            return <div key={s} style={{display:"flex",alignItems:"center",gap:4,background:`${cs?.color}18`,border:`1px solid ${cs?.color}33`,borderRadius:20,padding:"4px 10px"}}><span>{cs?.glyph}</span><span style={{fontSize:11,color:C.white,fontWeight:600}}>{s}</span></div>;
+            return <div key={s} style={{display:"flex",alignItems:"center",gap:4,background:`${cs?.color}18`,border:`1px solid ${cs?.color}33`,borderRadius:20,padding:"4px 10px"}}><span>{cs?.glyph}</span><span style={{fontSize:11,color:C.white,fontWeight:600}}>{signLabel(s,language)}</span></div>;
           })}
         </div>
       </Card>
@@ -3290,7 +3304,7 @@ function SignosListView() {
           return <div key={sign.name} onClick={()=>setSelected(sign.name)}
             style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,padding:14,cursor:"pointer"}}
             onMouseEnter={e=>e.currentTarget.style.borderColor=sign.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><span style={{fontSize:28}}>{sign.glyph}</span><div><div style={{fontSize:14,fontWeight:700,color:sign.color}}>{sign.name}</div><div style={{fontSize:10,color:C.muted}}>{info.dates}</div></div></div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><span style={{fontSize:28}}>{sign.glyph}</span><div><div style={{fontSize:14,fontWeight:700,color:sign.color}}>{signLabel(sign.name,language)}</div><div style={{fontSize:10,color:C.muted}}>{info.dates}</div></div></div>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}><Pill color={sign.color} style={{fontSize:9}}>{info.elementEmoji} {info.element}</Pill><Pill color={C.muted} style={{fontSize:9}}>{rulerDisplay.split(" ")[0]}</Pill></div>
             <div style={{fontSize:10,color:C.muted,fontStyle:"italic"}}>{info.keyword}</div>
           </div>;
@@ -3302,7 +3316,7 @@ function SignosListView() {
 
 // ── MÁS — Luna, eventos, energía, signos ─────────────────
 function MasView({ profile, chart, transits }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [sub, setSub] = useState("luna");
   const SUBS = [
     { id:"luna", label:t("masSubLuna") },
@@ -3333,7 +3347,7 @@ function MasView({ profile, chart, transits }) {
               {Object.entries(transits).map(([name,lon])=>(
                 <div key={name} style={{display:"flex",gap:8,alignItems:"center",background:C.bgDeep,borderRadius:10,padding:"8px 10px"}}>
                   <span style={{fontSize:16}}>{PLANET_SYMBOLS[name]}</span>
-                  <div><div style={{fontSize:11,fontWeight:700,color:C.white}}>{name}</div><div style={{fontSize:10,color:C.muted}}>{signOf(lon)} {degInSign(lon)}°</div></div>
+                  <div><div style={{fontSize:11,fontWeight:700,color:C.white}}>{name}</div><div style={{fontSize:10,color:C.muted}}>{signLabel(signOf(lon),language)} {degInSign(lon)}°</div></div>
                 </div>
               ))}
             </div>
