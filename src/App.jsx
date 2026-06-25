@@ -235,12 +235,6 @@ const TRANSLATIONS = {
     cartaHouse: "Casa {n}",
     cartaLilithTitle: "Lilith (Luna Negra)",
 
-    energyTitle: "ENERGÍA DEL DÍA",
-    energyAmor: "Amor",
-    energySalud: "Salud",
-    energyDinero: "Dinero",
-    energyAnimo: "Ánimo",
-
     biorhythmTitle: "Mi Biorritmo",
     biorhythmDesc: "Ciclos naturales de energía calculados desde tu fecha de nacimiento — cuándo rindes más y cuándo conviene bajar el ritmo.",
     biorhythmFisico: "Físico",
@@ -495,12 +489,6 @@ const TRANSLATIONS = {
     cartaMajor: "Major",
     cartaHouse: "House {n}",
     cartaLilithTitle: "Lilith (Black Moon)",
-
-    energyTitle: "TODAY'S ENERGY",
-    energyAmor: "Love",
-    energySalud: "Health",
-    energyDinero: "Money",
-    energyAnimo: "Mood",
 
     biorhythmTitle: "My Biorhythm",
     biorhythmDesc: "Natural energy cycles calculated from your birth date — when you perform best and when it's best to slow down.",
@@ -1678,90 +1666,6 @@ function PerfilForm({onSave}){
 }
 
 // ── ORACLE CARD ──────────────────────────────────────────
-// ── BARRAS DE ENERGÍA DIARIA ────────────────────────────
-function calcEnergyBars(chart, transits) {
-  const moon = getMoonPhase();
-  const day = new Date().getDate();
-
-  // Base scores by moon phase
-  const moonBase = {
-    "Luna Nueva":60,"Creciente":72,"Cuarto Creciente":68,
-    "Gibosa Creciente":78,"Luna Llena":85,"Gibosa Menguante":75,
-    "Cuarto Menguante":62,"Menguante":58
-  };
-  const base = moonBase[moon.name] || 70;
-
-  // Modifiers from transits
-  const venusSign = signOf(transits.Venus||0);
-  const marsSign  = signOf(transits.Marte||0);
-  const sunSign   = signOf(transits.Sol||0);
-
-  // Love: boosted by Venus in air/water, day variation
-  const loveBoost = ["Libra","Tauro","Cáncer","Piscis","Escorpio"].includes(venusSign) ? 12 : 0;
-  const amor = Math.min(99, Math.max(45, base + loveBoost + ((day * 7) % 18) - 9));
-
-  // Health: boosted by Virgo/Capricorn transits
-  const healthBoost = ["Virgo","Capricornio"].includes(sunSign) ? 8 : 0;
-  const salud = Math.min(99, Math.max(42, base + healthBoost + ((day * 11) % 20) - 10));
-
-  // Money: boosted by Taurus/Capricorn/Jupiter
-  const moneyBoost = ["Tauro","Capricornio","Leo"].includes(signOf(transits.Júpiter||0)) ? 10 : 0;
-  const dinero = Math.min(99, Math.max(40, base + moneyBoost + ((day * 13) % 22) - 11));
-
-  // Mood: mars and moon energy
-  const moodBoost = ["Fuego"].includes(ELEM_SIGNS_BASE[marsSign]) ? 8 : 0;
-  const animo = Math.min(99, Math.max(44, base + moodBoost + ((day * 9) % 16) - 8));
-
-  // Personalize if chart available
-  if (chart) {
-    const userVenusSign = chart.planets.Venus.sign;
-    const transit_venus = signOf(transits.Venus||0);
-    const isVenusHappy = ELEM_SIGNS_BASE[userVenusSign] === ELEM_SIGNS_BASE[transit_venus];
-    return {
-      amor: Math.min(99, amor + (isVenusHappy ? 8 : 0)),
-      salud: Math.min(99, salud + (chart.planets.Sol.house <= 6 ? 5 : 0)),
-      dinero: Math.min(99, dinero + (chart.planets.Júpiter.house >= 2 && chart.planets.Júpiter.house <= 8 ? 6 : 0)),
-      animo: Math.min(99, animo + (moon.name === "Luna Llena" ? 10 : 0)),
-    };
-  }
-  return { amor, salud, dinero, animo };
-}
-
-const ELEM_SIGNS_BASE = {
-  Aries:"Fuego",Tauro:"Tierra",Géminis:"Aire",Cáncer:"Agua",
-  Leo:"Fuego",Virgo:"Tierra",Libra:"Aire",Escorpio:"Agua",
-  Sagitario:"Fuego",Capricornio:"Tierra",Acuario:"Aire",Piscis:"Agua"
-};
-
-function EnergyBars({ chart, transits }) {
-  const{t}=useLanguage();
-  const bars = calcEnergyBars(chart, transits);
-  const items = [
-    { label:t("energyAmor"), value:bars.amor, color:"#e056a0", icon:"💕" },
-    { label:t("energySalud"), value:bars.salud, color:"#30d0b0", icon:"✨" },
-    { label:t("energyDinero"), value:bars.dinero, color:"#f0c040", icon:"💰" },
-    { label:t("energyAnimo"), value:bars.animo, color:"#9b6dff", icon:"⚡" },
-  ];
-  return (
-    <div style={{margin:"0 16px 14px",background:"#1e1240",border:"1px solid #2e1f5e",borderRadius:16,padding:16}}>
-      <div style={{fontSize:11,color:"#9080b0",fontWeight:700,letterSpacing:1,marginBottom:14}}>{t("energyTitle")}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
-        {items.map(item=>(
-          <div key={item.label}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-              <span style={{fontSize:12,color:"#f8f4ff",fontWeight:600}}>{item.icon} {item.label}</span>
-              <span style={{fontSize:14,fontWeight:800,color:item.color}}>{item.value}%</span>
-            </div>
-            <div style={{background:"#0a0518",borderRadius:6,height:6,overflow:"hidden"}}>
-              <div style={{width:`${item.value}%`,height:"100%",background:item.color,borderRadius:6,transition:"width 1s ease"}} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── BIORRITMO ────────────────────────────────────────────
 // Cuenta días completos transcurridos entre dos fechas, ignorando la hora del día —
 // así el resultado es estable sin importar a qué hora se abra la app o en qué zona horaria.
@@ -1783,17 +1687,13 @@ function calcBiorhythm(birthdate) {
   };
 }
 
-// Maps the raw -100..100 sine value to a 0..100% scale, which is the standard convention
-// for displaying biorhythms as a percentage and changes far more gradually day to day
-// than showing the raw sine value with a sign.
-function bioPct(v){return Math.round((v+100)/2);}
 function BiorhythmCard({ birthdate }) {
   const{t}=useLanguage();
   const bio = calcBiorhythm(birthdate);
   const items = [
-    { label:t("biorhythmFisico"), value:bioPct(bio.fisico), color:"#30d080" },
-    { label:t("biorhythmEmocional"), value:bioPct(bio.emocional), color:"#e056a0" },
-    { label:t("biorhythmMental"), value:bioPct(bio.intelectual), color:"#f0c040" },
+    { label:t("biorhythmFisico"), value:bio.fisico, color:"#30d080" },
+    { label:t("biorhythmEmocional"), value:bio.emocional, color:"#e056a0" },
+    { label:t("biorhythmMental"), value:bio.intelectual, color:"#f0c040" },
   ];
   // Mini chart: 7 days
   const baseDays = daysSinceBirth(birthdate);
@@ -1816,7 +1716,7 @@ function BiorhythmCard({ birthdate }) {
       <div style={{display:"flex",gap:12,marginBottom:14}}>
         {items.map(item=>(
           <div key={item.label} style={{flex:1,background:"#0a0518",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:800,color:item.color}}>{item.value}%</div>
+            <div style={{fontSize:20,fontWeight:800,color:item.color}}>{item.value > 0 ? "+" : ""}{item.value}%</div>
             <div style={{fontSize:10,color:"#9080b0",marginTop:3}}>{item.label}</div>
           </div>
         ))}
@@ -3040,7 +2940,6 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
           <button onClick={()=>setShowProfile(true)} style={{background:C.gold,color:"#1a0d00",border:"none",borderRadius:24,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appMyChartButton")}</button>
         </div>}
         <OracleCard oracle={oracle} profile={profile} chart={chart} transits={transits} setTab={setTab} />
-        {transits && <EnergyBars chart={chart} transits={transits} />}
         {profile && chart && <BiorhythmCard birthdate={profile.birthdate} />}
         <div style={{padding:"4px 16px 20px",display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:10}}>
           {[{icon:"🃏",label:tr("appTileTarotLabel"),desc:tr("appTileTarotDesc"),tab:"tarot",color:C.teal},{icon:"⚙️",label:tr("appTileMoreLabel"),desc:tr("appTileMoreDesc"),tab:"horoscopo",color:C.violet}].map(item=>(
