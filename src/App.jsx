@@ -2888,7 +2888,7 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
   }
 
   const moon=getMoonPhase();
-  const NAV=[{id:"inicio",icon:"🏠",label:tr("appNavInicio")},{id:"carta",icon:"🌌",label:tr("appNavCarta")},{id:"amor",icon:"💕",label:tr("appNavAmor")},{id:"tarot",icon:"🃏",label:tr("appNavTarot")},{id:"mas",icon:"⚙️",label:tr("appNavMas")}];
+  const NAV=[{id:"inicio",icon:"🏠",label:tr("appNavInicio")},{id:"carta",icon:"🌌",label:tr("appNavCarta")},{id:"amor",icon:"💕",label:tr("appNavAmor")},{id:"tarot",icon:"🃏",label:tr("appNavTarot")},{id:"mas",icon:"📅",label:tr("appNavMas")}];
   const MORE=[{id:"horoscopo",icon:"♈",label:"Signos"}];
 
   return <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI', system-ui, sans-serif",maxWidth:480,margin:"0 auto",color:C.white,position:"relative"}}>
