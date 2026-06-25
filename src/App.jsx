@@ -173,6 +173,22 @@ const TRANSLATIONS = {
     amorSecDesafio: "Desafíos",
     amorSecPotencial: "Potencial a Largo Plazo",
     amorSecConsejo: "Consejo para esta Pareja",
+    amorCatLove: "Amor",
+    amorCatEmotional: "Emocional",
+    amorCatCommunication: "Comunicación",
+    amorCatTrust: "Confianza",
+    amorCatIntimacy: "Intimidad",
+    amorKarmicTitle: "Conexión Kármica",
+    amorKarmicLevelAlta: "Alta",
+    amorKarmicLevelMedia: "Media",
+    amorKarmicLevelBaja: "Baja",
+    amorKarmicNoHits: "No se detectan puntos kármicos fuertes (Lilith/Nodos) entre sus cartas. Esto no es ni bueno ni malo — simplemente es una conexión más liviana en ese sentido.",
+    amorKarmicNeedChart: "Calcula la sinastría completa con la carta natal de esta persona para ver si hay una conexión kármica (Luna Negra y Nodos Lunares).",
+    amorOption4Title: "Mis mejores matches",
+    amorOption4Desc: "Compara tu signo solar contra los 12 signos del zodiaco y descubre con cuáles tienes mejor compatibilidad.",
+    amorOption4Warn: "Necesitas tu carta natal o elegir tu signo primero.",
+    topMatchesTitle: "Tus Mejores Matches",
+    topMatchesSubtitle: "Compatibilidad de tu signo solar contra los 12 signos del zodiaco",
 
     compatibleSignsTitle: "Tus Signos Compatibles",
     compatibleSignsSubtitle: "Basado en tu carta natal · Toca para ver el análisis",
@@ -418,6 +434,22 @@ const TRANSLATIONS = {
     amorSecDesafio: "Challenges",
     amorSecPotencial: "Long-Term Potential",
     amorSecConsejo: "Advice for this Couple",
+    amorCatLove: "Love",
+    amorCatEmotional: "Emotional",
+    amorCatCommunication: "Communication",
+    amorCatTrust: "Trust",
+    amorCatIntimacy: "Intimacy",
+    amorKarmicTitle: "Karmic Connection",
+    amorKarmicLevelAlta: "High",
+    amorKarmicLevelMedia: "Medium",
+    amorKarmicLevelBaja: "Low",
+    amorKarmicNoHits: "No strong karmic points (Lilith/Nodes) detected between your charts. That's not good or bad — it's simply a lighter connection in that sense.",
+    amorKarmicNeedChart: "Calculate the full synastry with this person's natal chart to see if there's a karmic connection (Black Moon and Lunar Nodes).",
+    amorOption4Title: "My best matches",
+    amorOption4Desc: "Compare your sun sign against all 12 zodiac signs and discover which ones you're most compatible with.",
+    amorOption4Warn: "You need your natal chart or to pick your sign first.",
+    topMatchesTitle: "Your Best Matches",
+    topMatchesSubtitle: "Your sun sign's compatibility against all 12 zodiac signs",
 
     compatibleSignsTitle: "Your Compatible Signs",
     compatibleSignsSubtitle: "Based on your natal chart · Tap to see the analysis",
@@ -1393,6 +1425,57 @@ function drawTarot(language) {
 const COMPAT_MATRIX={Fuego:{Fuego:90,Tierra:45,Aire:85,Agua:40},Tierra:{Fuego:45,Tierra:80,Aire:55,Agua:75},Aire:{Fuego:85,Tierra:55,Aire:75,Agua:60},Agua:{Fuego:40,Tierra:75,Aire:60,Agua:85}};
 const ELEM={Aries:"Fuego",Tauro:"Tierra",Géminis:"Aire",Cáncer:"Agua",Leo:"Fuego",Virgo:"Tierra",Libra:"Aire",Escorpio:"Agua",Sagitario:"Fuego",Capricornio:"Tierra",Acuario:"Aire",Piscis:"Agua"};
 const SIGNS_LIST=[{name:"Aries",glyph:"♈",color:"#e04060"},{name:"Tauro",glyph:"♉",color:"#30d0b0"},{name:"Géminis",glyph:"♊",color:"#f0c040"},{name:"Cáncer",glyph:"♋",color:"#9b6dff"},{name:"Leo",glyph:"♌",color:"#f0c040"},{name:"Virgo",glyph:"♍",color:"#30d0b0"},{name:"Libra",glyph:"♎",color:"#e056a0"},{name:"Escorpio",glyph:"♏",color:"#e04060"},{name:"Sagitario",glyph:"♐",color:"#9b6dff"},{name:"Capricornio",glyph:"♑",color:"#9080b0"},{name:"Acuario",glyph:"♒",color:"#40c8f0"},{name:"Piscis",glyph:"♓",color:"#9b6dff"}];
+
+function oppositeSign(sign){
+  const idx=SIGNS_LIST.findIndex(s=>s.name===sign);
+  return idx<0?sign:SIGNS_LIST[(idx+6)%12].name;
+}
+function hashPair(a,b){
+  const str=(a||"")+"-"+(b||"");
+  let h=0;for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))|0;}
+  return Math.abs(h);
+}
+// Deterministic per-pair breakdown of the overall score into 5 relationship categories,
+// so the same two signs always show the same bars instead of jumping around on every click.
+function getCompatCategories(score,s1,s2){
+  const h=hashPair(s1,s2);
+  const off=(n)=>((h>>(n*4))%13)-6;
+  const clamp=(v)=>Math.min(98,Math.max(28,Math.round(v)));
+  return {
+    love:clamp(score+off(0)),
+    emotional:clamp(score+off(1)),
+    communication:clamp(score+off(2)),
+    trust:clamp(score+off(3)),
+    intimacy:clamp(score+off(4)),
+  };
+}
+const KARMIC_ROLE_EN={Sol:"Sun",Luna:"Moon",Ascendente:"Ascendant"};
+// Looks for the other person's Sun/Moon/Ascendant landing on your Lilith or Lunar Nodes (and
+// vice versa) — the classic astrological markers of a "karmic" pull between two charts.
+function getKarmicInsight(myChart,theirChart,language){
+  if(!myChart||!theirChart)return null;
+  const isEn=language==="en";
+  const myNN=myChart.nnSign,myNS=oppositeSign(myNN),myLil=myChart.lilithSign;
+  const theirNN=theirChart.nnSign,theirNS=oppositeSign(theirNN),theirLil=theirChart.lilithSign;
+  const myPts=[{role:"Sol",sign:myChart.planets.Sol.sign},{role:"Luna",sign:myChart.planets.Luna.sign},{role:"Ascendente",sign:myChart.ascSign}];
+  const theirPts=[{role:"Sol",sign:theirChart.planets.Sol.sign},{role:"Luna",sign:theirChart.planets.Luna.sign},{role:"Ascendente",sign:theirChart.ascSign}];
+  const roleLabel=(role)=>isEn?KARMIC_ROLE_EN[role]:role;
+  const hits=[];
+  for(const p of theirPts){
+    const r=roleLabel(p.role),sg=signLabel(p.sign,language);
+    if(p.sign===myNN)hits.push(isEn?`Their ${r} falls on your North Node (${sg}) — this connection can push you toward real personal growth.`:`Su ${r} cae en tu Nodo Norte (${sg}) — esta conexión puede empujarte hacia un crecimiento real.`);
+    if(p.sign===myNS)hits.push(isEn?`Their ${r} falls on your South Node (${sg}) — it feels deeply familiar, possibly a repeated pattern from the past.`:`Su ${r} cae en tu Nodo Sur (${sg}) — se siente muy familiar, posiblemente un patrón repetido del pasado.`);
+    if(p.sign===myLil)hits.push(isEn?`Their ${r} falls on your Lilith (${sg}) — intense, magnetic attraction with a real risk of unhealthy dependency.`:`Su ${r} cae en tu Lilith (${sg}) — atracción intensa y magnética, con riesgo real de dependencia poco sana.`);
+  }
+  for(const p of myPts){
+    const r=roleLabel(p.role),sg=signLabel(p.sign,language);
+    if(p.sign===theirNN)hits.push(isEn?`Your ${r} falls on their North Node (${sg}) — you may be the one pushing their growth.`:`Tu ${r} cae en su Nodo Norte (${sg}) — puedes ser quien empuje su crecimiento.`);
+    if(p.sign===theirNS)hits.push(isEn?`Your ${r} falls on their South Node (${sg}) — old, familiar territory for them.`:`Tu ${r} cae en su Nodo Sur (${sg}) — territorio viejo y familiar para esa persona.`);
+    if(p.sign===theirLil)hits.push(isEn?`Your ${r} falls on their Lilith (${sg}) — you trigger something raw and instinctive in them.`:`Tu ${r} cae en su Lilith (${sg}) — despiertas algo crudo e instintivo en esa persona.`);
+  }
+  const level=hits.length>=3?"alta":hits.length>=1?"media":"baja";
+  return{level,hits};
+}
 
 const COMPAT_TEXTS = {
   "Fuego-Fuego": {quimica:"Hay una chispa inmediata entre ustedes dos. La energía es alta, el ritmo es similar y la motivación mutua puede ser increíble. El riesgo es que dos fuegos juntos pueden incendiarse — si no hay espacio para que cada uno brille individualmente, la competencia puede aparecer.", desafio:"Necesitan aprender a no apagar el fuego del otro con el propio. Cuando los dos quieren ser el centro, nadie gana. La clave es apoyarse en los logros mutuos, no competir.", potencial:"Si canalizan esa energía hacia metas comunes, son imparables. Una pareja de fuego puede construir cosas extraordinarias juntos cuando van en la misma dirección.", consejo:"Celebren los logros del otro como si fueran propios. Eso convierte la competencia en equipo."},
@@ -2398,6 +2481,34 @@ function TarotView(){
   </div>;
 }
 
+// ── TOP MATCHES VIEW ─────────────────────────────────────
+function TopMatchesView({mySign,onBack}){
+  const{t,language}=useLanguage();
+  const ranked=SIGNS_LIST.filter(s=>s.name!==mySign).map(s=>({...s,score:Math.min(97,Math.max(32,COMPAT_MATRIX[ELEM[mySign]]?.[ELEM[s.name]]||60))})).sort((a,b)=>b.score-a.score);
+  const mine=SIGNS_LIST.find(s=>s.name===mySign);
+  return <div style={{padding:16}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={onBack} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{t("amorBack")}</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{t("topMatchesTitle")}</h2></div>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,justifyContent:"center"}}>
+      <span style={{fontSize:24}}>{mine?.glyph}</span><span style={{color:mine?.color,fontWeight:700,fontSize:14}}>{signLabel(mySign,language)}</span>
+    </div>
+    <p style={{color:C.muted,fontSize:12,marginBottom:14,textAlign:"center"}}>{t("topMatchesSubtitle")}</p>
+    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      {ranked.map((s,i)=>{
+        const sc=s.score>=75?C.success:s.score>=55?C.gold:C.danger;
+        return <div key={s.name} style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{fontSize:11,color:C.mutedDark,fontWeight:700,width:18,flexShrink:0}}>{i+1}</div>
+          <div style={{fontSize:20,flexShrink:0}}>{s.glyph}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:700,color:s.color}}>{signLabel(s.name,language)}</div>
+            <div style={{background:C.bgMid,borderRadius:6,height:5,marginTop:4,overflow:"hidden"}}><div style={{width:`${s.score}%`,height:"100%",background:sc,borderRadius:6}} /></div>
+          </div>
+          <div style={{fontSize:14,fontWeight:800,color:sc,flexShrink:0}}>{s.score}%</div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
 // ── COMPATIBLE SIGNS VIEW ────────────────────────────────
 function CompatibleSignsView({chart,profile,onBack}){
   const{t,language}=useLanguage();
@@ -2467,7 +2578,8 @@ function AmorView({myChart,myProfile,loggedEmail}){
     const s1=signA||mySign, s2=signB||theirSign;
     const score=Math.min(97,Math.max(32,(COMPAT_MATRIX[ELEM[s1]]?.[ELEM[s2]]||60)+Math.floor(Math.random()*16)-8));
     const texts=getCompatText(s1,s2,undefined,undefined,language);
-    setResult({score,type:"sign",s1,s2,texts});
+    const categories=getCompatCategories(score,s1,s2);
+    setResult({score,type:"sign",s1,s2,texts,categories});
   }
   async function calcChartCompat(){
     setSynastryLoading(true);
@@ -2480,7 +2592,9 @@ function AmorView({myChart,myProfile,loggedEmail}){
       const ias=[];for(const[pA,dA]of Object.entries(myChart.planets))for(const[pB,dB]of Object.entries(tc.planets)){const a=findAspect(dA.lon,dB.lon);if(a&&a.type!=="minor")ias.push({pA,pB,...a});}
       const top=ias.sort((a,b)=>parseFloat(a.exact)-parseFloat(b.exact)).slice(0,5);
       const texts=getCompatText(s1,s2,myProfile?.name,theirForm.name,language);
-      setResult({score,type:"chart",s1,s2,theirName:theirForm.name,theirChart:tc,interAspects:top,texts});
+      const categories=getCompatCategories(score,s1,s2);
+      const karmic=getKarmicInsight(myChart,tc,language);
+      setResult({score,type:"chart",s1,s2,theirName:theirForm.name,theirChart:tc,interAspects:top,texts,categories,karmic});
       // Guardar o actualizar la persona en Supabase. Si venimos de "editar" (_editId presente),
       // actualizamos ESE registro exacto. Si no, usamos upsert por nombre para evitar duplicados.
       if(loggedEmail && saveAfter){
@@ -2533,7 +2647,29 @@ function AmorView({myChart,myProfile,loggedEmail}){
           ))}
         </div>
         <div style={{textAlign:"center",marginBottom:8}}><div style={{fontSize:44,fontWeight:800,color:sc}}>{result.score}%</div><div style={{fontSize:11,color:C.muted}}>{t("amorCompatibilityLabel")}</div><div style={{background:C.bgMid,borderRadius:6,height:6,margin:"10px auto 0",maxWidth:200,overflow:"hidden"}}><div style={{width:`${result.score}%`,height:"100%",background:sc,borderRadius:6,transition:"width 1s ease"}} /></div></div>
+        {result.categories&&<div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${C.border}`}}>
+          {[{key:"love",label:t("amorCatLove"),icon:"💗",color:C.pink},{key:"emotional",label:t("amorCatEmotional"),icon:"💧",color:C.cyan},{key:"communication",label:t("amorCatCommunication"),icon:"💬",color:C.violet},{key:"trust",label:t("amorCatTrust"),icon:"🛡️",color:C.teal},{key:"intimacy",label:t("amorCatIntimacy"),icon:"🔥",color:C.warn}].map(cat=>(
+            <div key={cat.key} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+              <div style={{fontSize:13,width:18,flexShrink:0}}>{cat.icon}</div>
+              <div style={{fontSize:11,color:C.muted,width:90,flexShrink:0}}>{cat.label}</div>
+              <div style={{flex:1,background:C.bgMid,borderRadius:6,height:6,overflow:"hidden"}}><div style={{width:`${result.categories[cat.key]}%`,height:"100%",background:cat.color,borderRadius:6}} /></div>
+              <div style={{fontSize:11,color:C.white,fontWeight:700,width:30,textAlign:"right",flexShrink:0}}>{result.categories[cat.key]}%</div>
+            </div>
+          ))}
+        </div>}
         {result.type==="chart"&&result.interAspects?.length>0&&<SinastriaDetalle interAspects={result.interAspects} s1={result.s1} s2={result.s2} theirName={result.theirName} myProfile={myProfile} />}
+      </Card>
+      <Card style={{marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <div style={{fontSize:18}}>☊</div>
+          <div style={{fontSize:13,fontWeight:700,color:C.gold}}>{t("amorKarmicTitle")}</div>
+          {result.karmic&&<Pill color={result.karmic.level==="alta"?C.danger:result.karmic.level==="media"?C.warn:C.teal} style={{marginLeft:"auto",fontSize:9}}>{t(`amorKarmicLevel${result.karmic.level==="alta"?"Alta":result.karmic.level==="media"?"Media":"Baja"}`)}</Pill>}
+        </div>
+        {!result.karmic&&<p style={{fontSize:12,color:C.muted,lineHeight:1.6,margin:0}}>{t("amorKarmicNeedChart")}</p>}
+        {result.karmic&&result.karmic.hits.length===0&&<p style={{fontSize:12,color:C.muted,lineHeight:1.6,margin:0}}>{t("amorKarmicNoHits")}</p>}
+        {result.karmic&&result.karmic.hits.length>0&&<ul style={{margin:0,paddingLeft:18}}>
+          {result.karmic.hits.map((hit,i)=>(<li key={i} style={{fontSize:12,color:C.white,lineHeight:1.6,marginBottom:6}}>{hit}</li>))}
+        </ul>}
       </Card>
       {SECS.map(sec=>{const content=result.texts[sec.key];if(!content)return null;const isOpen=openSec===sec.key;const preview=content.split(/[.!?]/)[0].trim();
         return <div key={sec.key} onClick={()=>setOpenSec(isOpen?null:sec.key)} style={{background:C.bgCard,border:`1px solid ${isOpen?sec.color+"55":C.border}`,borderRadius:14,padding:12,marginBottom:8,cursor:"pointer"}}>
@@ -2589,8 +2725,23 @@ function AmorView({myChart,myProfile,loggedEmail}){
           </div>
         </div>
       </div>
+
+      {/* OPCIÓN 4 — ranking contra los 12 signos */}
+      <div onClick={()=>(myChart||mySign)?setMode("topMatches"):null} style={{background:C.bgCard,border:`1px solid ${(myChart||mySign)?C.pink+"44":C.border}`,borderRadius:16,padding:16,cursor:(myChart||mySign)?"pointer":"not-allowed",opacity:(myChart||mySign)?1:0.5}} onMouseEnter={e=>(myChart||mySign)&&(e.currentTarget.style.borderColor=C.pink)} onMouseLeave={e=>e.currentTarget.style.borderColor=(myChart||mySign)?`${C.pink}44`:C.border}>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+          <div style={{width:44,height:44,borderRadius:12,background:`${C.pink}18`,border:`1px solid ${C.pink}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🏆</div>
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:C.pink,marginBottom:4}}>{t("amorOption4Title")}</div>
+            <div style={{fontSize:12,color:C.muted,lineHeight:1.55}}>
+              {t("amorOption4Desc")}
+            </div>
+            {!(myChart||mySign)&&<div style={{fontSize:11,color:C.warn,marginTop:6}}>{t("amorOption4Warn")}</div>}
+          </div>
+        </div>
+      </div>
     </div>
   </div>;
+  if(mode==="topMatches")return <TopMatchesView mySign={mySign} onBack={reset} />;
   if(mode==="signOnly")return <div style={{padding:16}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><button onClick={reset} style={{background:"none",border:"none",color:C.violet,fontSize:13,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{t("amorBack")}</button><h2 style={{color:C.gold,fontSize:14,fontWeight:700,margin:0}}>{t("amorBySignTitle")}</h2></div>
     <p style={{color:C.muted,fontSize:13,marginBottom:12}}>{signStep===1?t("amorYourSign"):t("amorYourSignSelected")}</p>
