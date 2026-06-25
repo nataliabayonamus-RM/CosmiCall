@@ -78,6 +78,10 @@ Deno.serve(async (req) => {
   const email = attrs?.user_email?.toLowerCase();
   const customerId = String(attrs?.customer_id || "");
   const status = attrs?.status; // active, on_trial, past_due, cancelled, expired, paused, unpaid
+  const plan = attrs?.variant_name || attrs?.product_name || null;
+  const expiresAt = ["active", "on_trial", "past_due"].includes(status)
+    ? attrs?.renews_at || null
+    : attrs?.ends_at || null;
 
   try {
     if (!email) {
@@ -103,7 +107,13 @@ Deno.serve(async (req) => {
         if (existing) {
           const { error: updateError } = await supabase
             .from("accesos")
-            .update({ activo, ls_customer_id: customerId, ls_subscription_id: subscriptionId })
+            .update({
+              activo,
+              ls_customer_id: customerId,
+              ls_subscription_id: subscriptionId,
+              plan,
+              expires_at: expiresAt,
+            })
             .eq("email", email);
           if (updateError) throw new Error(`update accesos: ${JSON.stringify(updateError)}`);
         } else {
@@ -113,6 +123,8 @@ Deno.serve(async (req) => {
             activo,
             ls_customer_id: customerId,
             ls_subscription_id: subscriptionId,
+            plan,
+            expires_at: expiresAt,
           });
           if (insertError) throw new Error(`insert accesos: ${JSON.stringify(insertError)}`);
         }
