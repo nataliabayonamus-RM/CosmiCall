@@ -1783,13 +1783,17 @@ function calcBiorhythm(birthdate) {
   };
 }
 
+// Maps the raw -100..100 sine value to a 0..100% scale, which is the standard convention
+// for displaying biorhythms as a percentage and changes far more gradually day to day
+// than showing the raw sine value with a sign.
+function bioPct(v){return Math.round((v+100)/2);}
 function BiorhythmCard({ birthdate }) {
   const{t}=useLanguage();
   const bio = calcBiorhythm(birthdate);
   const items = [
-    { label:t("biorhythmFisico"), value:bio.fisico, color:"#30d080" },
-    { label:t("biorhythmEmocional"), value:bio.emocional, color:"#e056a0" },
-    { label:t("biorhythmMental"), value:bio.intelectual, color:"#f0c040" },
+    { label:t("biorhythmFisico"), value:bioPct(bio.fisico), color:"#30d080" },
+    { label:t("biorhythmEmocional"), value:bioPct(bio.emocional), color:"#e056a0" },
+    { label:t("biorhythmMental"), value:bioPct(bio.intelectual), color:"#f0c040" },
   ];
   // Mini chart: 7 days
   const baseDays = daysSinceBirth(birthdate);
@@ -1812,7 +1816,7 @@ function BiorhythmCard({ birthdate }) {
       <div style={{display:"flex",gap:12,marginBottom:14}}>
         {items.map(item=>(
           <div key={item.label} style={{flex:1,background:"#0a0518",borderRadius:12,padding:"10px 8px",textAlign:"center"}}>
-            <div style={{fontSize:20,fontWeight:800,color:item.color}}>{item.value > 0 ? "+" : ""}{item.value}%</div>
+            <div style={{fontSize:20,fontWeight:800,color:item.color}}>{item.value}%</div>
             <div style={{fontSize:10,color:"#9080b0",marginTop:3}}>{item.label}</div>
           </div>
         ))}
