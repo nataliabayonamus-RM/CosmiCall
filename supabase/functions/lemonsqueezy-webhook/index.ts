@@ -79,8 +79,11 @@ Deno.serve(async (req) => {
   const customerId = String(attrs?.customer_id || "");
   const status = attrs?.status; // active, on_trial, past_due, cancelled, expired, paused, unpaid
   const plan = attrs?.variant_name || attrs?.product_name || null;
-  const expiresAt = ["active", "on_trial", "past_due"].includes(status)
-    ? attrs?.renews_at || null
+  // Si está cancelada pero aún no llegó la fecha de fin (ends_at), Lemon Squeezy ya cobró ese período:
+  // el acceso se mantiene activo hasta que expire por sí solo.
+  const cancelledButNotEnded = status === "cancelled" && attrs?.ends_at && new Date(attrs.ends_at) > new Date();
+  const expiresAt = ["active", "on_trial", "past_due"].includes(status) || cancelledButNotEnded
+    ? attrs?.renews_at || attrs?.ends_at || null
     : attrs?.ends_at || null;
 
   try {
@@ -90,7 +93,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const activo = ["active", "on_trial"].includes(status);
+    const activo = ["active", "on_trial"].includes(status) || cancelledButNotEnded;
 
     switch (eventName) {
       case "subscription_created":
