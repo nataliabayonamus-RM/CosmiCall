@@ -72,7 +72,6 @@ Deno.serve(async (req) => {
   }
 
   const payload = JSON.parse(rawBody);
-  console.log("DEBUG payload completo:", JSON.stringify(payload));
   const eventName = payload.meta?.event_name;
   const attrs = payload.data?.attributes;
   const subscriptionId = String(payload.data?.id || "");
@@ -83,8 +82,6 @@ Deno.serve(async (req) => {
   const expiresAt = ["active", "on_trial", "past_due"].includes(status)
     ? attrs?.renews_at || null
     : attrs?.ends_at || null;
-
-  console.log("DEBUG evento:", eventName, "email:", email, "status:", status);
 
   try {
     if (!email) {
