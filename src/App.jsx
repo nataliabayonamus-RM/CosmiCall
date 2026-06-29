@@ -730,33 +730,6 @@ const sb = {
     });
   },
 
-  // ── Determina con qué plataforma de pago está asociada la cuenta ──
-  async getPaymentProvider(email) {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/accesos?email=eq.${encodeURIComponent(email.toLowerCase().trim())}&select=ls_subscription_id,hotmart_subscriber_code`,
-      { headers: this.headers },
-    );
-    const rows = await r.json();
-    const row = rows?.[0];
-    if (row?.ls_subscription_id) return "lemonsqueezy";
-    if (row?.hotmart_subscriber_code) return "hotmart";
-    return null;
-  },
-
-  // ── LEMON SQUEEZY: portal de facturación (cambiar plan / cancelar) ──
-  async getPlanPortalUrl(email) {
-    const r = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session-ls`, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({ email: email.toLowerCase().trim(), return_url: window.location.href }),
-    });
-    if (!r.ok) {
-      const errText = await r.text();
-      throw new Error(errText || `Error ${r.status}`);
-    }
-    const data = await r.json();
-    return data.url;
-  },
 };
 
 // ── ACCESS GATE + LOGIN ──────────────────────────────────
@@ -2769,46 +2742,16 @@ function AmorView({myChart,myProfile,loggedEmail}){
 // ── PANTALLA DE CONFIGURACIÓN ─────────────────────────────
 function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
   const{t}=useLanguage();
-  const[loadingPortal,setLoadingPortal]=useState(false);
   const[showContact,setShowContact]=useState(false);
   const[showHotmartCancelHelp,setShowHotmartCancelHelp]=useState(false);
   const[showChangePlanHelp,setShowChangePlanHelp]=useState(false);
-  const[portalError,setPortalError]=useState("");
 
-  async function handleCancelSubscription(){
-    setLoadingPortal(true); setPortalError("");
-    try{
-      const provider = await sb.getPaymentProvider(loggedEmail);
-      if(provider==="hotmart"){
-        setShowHotmartCancelHelp(true);
-      }else if(provider==="lemonsqueezy"){
-        const url = await sb.getPlanPortalUrl(loggedEmail);
-        window.location.href = url;
-      }else{
-        setShowContact(true);
-      }
-    }catch(e){
-      setPortalError(t("settingsPortalError"));
-      console.error(e);
-    }
-    setLoadingPortal(false);
+  function handleCancelSubscription(){
+    setShowHotmartCancelHelp(true);
   }
 
-  async function handleChangePlan(){
-    setLoadingPortal(true); setPortalError("");
-    try{
-      const provider = await sb.getPaymentProvider(loggedEmail);
-      if(provider==="lemonsqueezy"){
-        const url = await sb.getPlanPortalUrl(loggedEmail);
-        window.location.href = url;
-      }else{
-        setShowChangePlanHelp(true);
-      }
-    }catch(e){
-      setPortalError(t("settingsPortalError"));
-      console.error(e);
-    }
-    setLoadingPortal(false);
+  function handleChangePlan(){
+    setShowChangePlanHelp(true);
   }
 
   const Row=({icon,label,onClick,danger})=>(
@@ -2837,12 +2780,11 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
       <div style={{padding:"16px 16px 8px"}}>
         <h3 style={{fontSize:13,fontWeight:700,color:C.muted,margin:"0 0 10px",textTransform:"uppercase",letterSpacing:0.5}}>{t("settingsMyAccount")}</h3>
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-          <Row icon="🚫" label={loadingPortal?t("settingsOpeningPortal"):t("settingsCancelSubscription")} onClick={loadingPortal?undefined:handleCancelSubscription} />
-          <Row icon="🔄" label={loadingPortal?t("settingsOpeningPortal"):t("settingsChangePlan")} onClick={loadingPortal?undefined:handleChangePlan} />
+          <Row icon="🚫" label={t("settingsCancelSubscription")} onClick={handleCancelSubscription} />
+          <Row icon="🔄" label={t("settingsChangePlan")} onClick={handleChangePlan} />
           <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>setShowContact(v=>!v)} />
           <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>setShowContact(v=>!v)} />
         </div>
-        {portalError&&<p style={{color:C.danger,fontSize:12,marginTop:8,lineHeight:1.5}}>{portalError}</p>}
         {showContact&&<p style={{color:C.muted,fontSize:12,marginTop:10,lineHeight:1.5}}>
           {t("settingsContactMessage")} <span style={{color:C_ACCESS.gold}}>atencionalcoientem@gmail.com</span>
         </p>}
