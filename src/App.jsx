@@ -69,6 +69,13 @@ const TRANSLATIONS = {
     settingsContactMessage: "Si tienes problemas o preguntas, contáctanos a:",
     settingsPortalError: "No pudimos abrir la gestión de tu plan. Si el problema persiste, escríbenos a atencionalcoientem@gmail.com.",
     settingsLogout: "Cerrar sesión",
+    settingsHotmartTitle: "Cancelar o cambiar tu plan",
+    settingsHotmartStep1: "1. Entra a tu área de comprador en Hotmart con el correo y la contraseña que usaste al comprar:",
+    settingsHotmartStep1Link: "Ir a Hotmart",
+    settingsHotmartStep2: "2. Busca tu suscripción activa de CosmiCall en la sección de tus compras.",
+    settingsHotmartStep3: "3. Para cancelar: selecciónala y elige la opción de cancelar suscripción. Es un proceso sencillo que puedes hacer tú mismo, sin necesidad de que intervengamos.",
+    settingsHotmartStep4: "4. Para cambiar de plan: este paso no puedes hacerlo tú directamente. Escríbenos a atencionalcoientem@gmail.com indicando a qué plan quieres cambiarte y nosotros te enviaremos la invitación desde Hotmart para aceptarla.",
+    settingsHotmartClose: "Entendido",
 
     appHeaderBrand: "Cosmicall",
     appAdminButton: "⚙️ Accesos",
@@ -324,6 +331,13 @@ const TRANSLATIONS = {
     settingsContactMessage: "If you have any issues or questions, contact us at:",
     settingsPortalError: "We couldn't open your plan management. If the problem persists, write to us at atencionalcoientem@gmail.com.",
     settingsLogout: "Log out",
+    settingsHotmartTitle: "Cancel or change your plan",
+    settingsHotmartStep1: "1. Log in to your Hotmart buyer area with the email and password you used to purchase:",
+    settingsHotmartStep1Link: "Go to Hotmart",
+    settingsHotmartStep2: "2. Find your active CosmiCall subscription in your purchases section.",
+    settingsHotmartStep3: "3. To cancel: select it and choose the cancel subscription option. It's a simple process you can do yourself, no need for us to step in.",
+    settingsHotmartStep4: "4. To change plans: you can't do this step yourself directly. Write to us at atencionalcoientem@gmail.com telling us which plan you'd like to switch to, and we'll send you the invitation from Hotmart to accept it.",
+    settingsHotmartClose: "Got it",
 
     appHeaderBrand: "Cosmicall",
     appAdminButton: "⚙️ Access",
@@ -708,6 +722,19 @@ const sb = {
       method: "DELETE",
       headers: this.headers,
     });
+  },
+
+  // ── Determina con qué plataforma de pago está asociada la cuenta ──
+  async getPaymentProvider(email) {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/accesos?email=eq.${encodeURIComponent(email.toLowerCase().trim())}&select=ls_subscription_id,hotmart_subscriber_code`,
+      { headers: this.headers },
+    );
+    const rows = await r.json();
+    const row = rows?.[0];
+    if (row?.ls_subscription_id) return "lemonsqueezy";
+    if (row?.hotmart_subscriber_code) return "hotmart";
+    return null;
   },
 
   // ── LEMON SQUEEZY: portal de facturación (cambiar plan / cancelar) ──
@@ -2738,11 +2765,18 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
   const{t}=useLanguage();
   const[loadingPortal,setLoadingPortal]=useState(false);
   const[showContact,setShowContact]=useState(false);
+  const[showHotmartHelp,setShowHotmartHelp]=useState(false);
   const[portalError,setPortalError]=useState("");
 
   async function openPlanPortal(){
     setLoadingPortal(true); setPortalError("");
     try{
+      const provider = await sb.getPaymentProvider(loggedEmail);
+      if(provider==="hotmart"){
+        setShowHotmartHelp(true);
+        setLoadingPortal(false);
+        return;
+      }
       const url = await sb.getPlanPortalUrl(loggedEmail);
       window.location.href = url;
     }catch(e){
@@ -2792,6 +2826,18 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
         <button onClick={onLogout} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:14,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsLogout")}</button>
       </div>
     </div>
+
+    {showHotmartHelp&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setShowHotmartHelp(false)}>
+      <div style={{maxWidth:420,width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:20}} onClick={e=>e.stopPropagation()}>
+        <h3 style={{color:C.gold,fontSize:16,fontWeight:700,marginBottom:14}}>{t("settingsHotmartTitle")}</h3>
+        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep1")}</p>
+        <a href="https://hotmart.com/co" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",color:"#1a0d00",background:C.gold,borderRadius:10,padding:"8px 14px",fontSize:13,fontWeight:700,textDecoration:"none",marginBottom:14}}>{t("settingsHotmartStep1Link")}</a>
+        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep2")}</p>
+        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep3")}</p>
+        <p style={{color:C.muted,fontSize:13,lineHeight:1.6,marginBottom:16}}>{t("settingsHotmartStep4")}</p>
+        <button onClick={()=>setShowHotmartHelp(false)} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsHotmartClose")}</button>
+      </div>
+    </div>}
   </div>;
 }
 
