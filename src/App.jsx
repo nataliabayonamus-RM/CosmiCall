@@ -62,7 +62,7 @@ const TRANSLATIONS = {
     settingsMyProfile: "Mi perfil",
     settingsEditChart: "Editar mi carta natal",
     settingsMyAccount: "Mi cuenta",
-    settingsChangePlan: "Cambiar plan o cancelar suscripción",
+    settingsChangePlan: "Cambiar plan",
     settingsOpeningPortal: "Abriendo gestión de plan…",
     settingsHelpCenter: "Centro de ayuda",
     settingsContactUs: "Contáctanos",
@@ -327,7 +327,7 @@ const TRANSLATIONS = {
     settingsMyProfile: "My profile",
     settingsEditChart: "Edit my natal chart",
     settingsMyAccount: "My account",
-    settingsChangePlan: "Change plan or cancel subscription",
+    settingsChangePlan: "Change plan",
     settingsOpeningPortal: "Opening plan management…",
     settingsHelpCenter: "Help center",
     settingsContactUs: "Contact us",
@@ -2762,6 +2762,14 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
     </div>
   );
 
+  const Modal=({children,onClose:close})=>(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={close}>
+      <div style={{maxWidth:420,width:"100%",maxHeight:"85vh",overflowY:"auto",background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:16,padding:20}} onClick={e=>e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+
   return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:600,overflowY:"auto"}}>
     <div style={{maxWidth:480,margin:"0 auto",minHeight:"100vh",background:C.bg}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",background:C.bgMid,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0}}>
@@ -2782,12 +2790,8 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
         <div style={{background:C.bgCard,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
           <Row icon="🚫" label={t("settingsCancelSubscription")} onClick={handleCancelSubscription} />
           <Row icon="🔄" label={t("settingsChangePlan")} onClick={handleChangePlan} />
-          <Row icon="ℹ️" label={t("settingsHelpCenter")} onClick={()=>setShowContact(v=>!v)} />
-          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>setShowContact(v=>!v)} />
+          <Row icon="✉️" label={t("settingsContactUs")} onClick={()=>setShowContact(true)} />
         </div>
-        {showContact&&<p style={{color:C.muted,fontSize:12,marginTop:10,lineHeight:1.5}}>
-          {t("settingsContactMessage")} <span style={{color:C_ACCESS.gold}}>atencionalcoientem@gmail.com</span>
-        </p>}
       </div>
 
       <div style={{padding:"16px 16px 32px"}}>
@@ -2795,25 +2799,27 @@ function SettingsPanel({ loggedEmail, onClose, onEditProfile, onLogout }){
       </div>
     </div>
 
-    {showHotmartCancelHelp&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setShowHotmartCancelHelp(false)}>
-      <div style={{maxWidth:420,width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:20}} onClick={e=>e.stopPropagation()}>
-        <h3 style={{color:C.gold,fontSize:16,fontWeight:700,marginBottom:14}}>{t("settingsHotmartCancelTitle")}</h3>
-        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep1")}</p>
-        <a href="https://hotmart.com/co" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",color:"#1a0d00",background:C.gold,borderRadius:10,padding:"8px 14px",fontSize:13,fontWeight:700,textDecoration:"none",marginBottom:14}}>{t("settingsHotmartStep1Link")}</a>
-        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep2")}</p>
-        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep3")}</p>
-        <p style={{color:C.muted,fontSize:13,lineHeight:1.6,marginBottom:16}}>{t("settingsHotmartCancelFallback")} <span style={{color:C_ACCESS.gold}}>atencionalcoientem@gmail.com</span></p>
-        <button onClick={()=>setShowHotmartCancelHelp(false)} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsHotmartClose")}</button>
-      </div>
-    </div>}
+    {showContact&&<Modal onClose={()=>setShowContact(false)}>
+      <h3 style={{color:C.gold,fontSize:16,fontWeight:700,marginBottom:14}}>{t("settingsContactUs")}</h3>
+      <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:16}}>{t("settingsContactMessage")} <span style={{color:C.gold}}>atencionalcoientem@gmail.com</span></p>
+      <button onClick={()=>setShowContact(false)} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsHotmartClose")}</button>
+    </Modal>}
 
-    {showChangePlanHelp&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setShowChangePlanHelp(false)}>
-      <div style={{maxWidth:420,width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:20}} onClick={e=>e.stopPropagation()}>
-        <h3 style={{color:C.gold,fontSize:16,fontWeight:700,marginBottom:14}}>{t("settingsChangePlanTitle")}</h3>
-        <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:16}}>{t("settingsChangePlanMessage")} <span style={{color:C_ACCESS.gold}}>atencionalcoientem@gmail.com</span></p>
-        <button onClick={()=>setShowChangePlanHelp(false)} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsHotmartClose")}</button>
-      </div>
-    </div>}
+    {showHotmartCancelHelp&&<Modal onClose={()=>setShowHotmartCancelHelp(false)}>
+      <h3 style={{color:C.gold,fontSize:16,fontWeight:700,marginBottom:14}}>{t("settingsHotmartCancelTitle")}</h3>
+      <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep1")}</p>
+      <a href="https://hotmart.com/co" target="_blank" rel="noopener noreferrer" style={{display:"inline-block",color:"#1a0d00",background:C.gold,borderRadius:10,padding:"8px 14px",fontSize:13,fontWeight:700,textDecoration:"none",marginBottom:14}}>{t("settingsHotmartStep1Link")}</a>
+      <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep2")}</p>
+      <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:10}}>{t("settingsHotmartStep3")}</p>
+      <p style={{color:C.muted,fontSize:13,lineHeight:1.6,marginBottom:16}}>{t("settingsHotmartCancelFallback")} <span style={{color:C.gold}}>atencionalcoientem@gmail.com</span></p>
+      <button onClick={()=>setShowHotmartCancelHelp(false)} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsHotmartClose")}</button>
+    </Modal>}
+
+    {showChangePlanHelp&&<Modal onClose={()=>setShowChangePlanHelp(false)}>
+      <h3 style={{color:C.gold,fontSize:16,fontWeight:700,marginBottom:14}}>{t("settingsChangePlanTitle")}</h3>
+      <p style={{color:C.white,fontSize:13,lineHeight:1.6,marginBottom:16}}>{t("settingsChangePlanMessage")} <span style={{color:C.gold}}>atencionalcoientem@gmail.com</span></p>
+      <button onClick={()=>setShowChangePlanHelp(false)} style={{width:"100%",background:C.gold,color:"#1a0d00",border:"none",borderRadius:12,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{t("settingsHotmartClose")}</button>
+    </Modal>}
   </div>;
 }
 
@@ -2917,14 +2923,14 @@ function CosmicallApp({ loggedEmail, isAdmin, onOpenAdmin, onLogout }){
     <style>{`* { box-sizing: border-box; margin: 0; padding: 0; } ::-webkit-scrollbar { width: 0; height: 0; } input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; } button { font-family: inherit; } input { font-family: inherit; }`}</style>
 
     {/* Header */}
-    <header style={{background:C.bgMid,borderBottom:`1px solid ${C.border}`,padding:"11px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
+    <header style={{background:C.bgMid,borderBottom:`1px solid ${C.border}`,padding:"11px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",rowGap:8,position:"sticky",top:0,zIndex:100}}>
       <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>✨</span><span style={{fontSize:17,fontWeight:800,color:C.gold,letterSpacing:-0.5}}>{tr("appHeaderBrand")}</span><span style={{fontSize:11,color:C.muted,marginLeft:2}}>{moon.emoji}</span></div>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",justifyContent:"flex-end",rowGap:6}}>
         {profile&&<span style={{fontSize:11,color:C.teal,fontWeight:600}}>{chart&&`${signLabel(chart.planets.Sol.sign,language)} · Asc ${signLabel(chart.ascSign,language)}`}</span>}
         {isAdmin&&<button onClick={onOpenAdmin} style={{background:"#e0406020",border:"1px solid #e0406044",borderRadius:20,padding:"5px 10px",color:"#e04060",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{tr("appAdminButton")}</button>}
         <button onClick={()=>setShowProfile(true)} style={{background:profile?`${C.teal}22`:`${C.violet}22`,border:`1px solid ${profile?C.teal:C.violetDim}`,borderRadius:20,padding:"5px 12px",color:profile?C.teal:C.violet,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{profile?`✏️ ${profile.name.split(" ")[0]}`:tr("appMyChartButton")}</button>
         <LanguageToggle />
-        <button onClick={()=>setShowSettings(true)} aria-label={tr("appSettingsAria")} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:20,width:30,height:30,color:C.muted,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>⚙️</button>
+        <button onClick={()=>setShowSettings(true)} aria-label={tr("appSettingsAria")} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:20,width:30,height:30,color:C.muted,fontSize:14,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>⚙️</button>
       </div>
     </header>
 
@@ -3449,9 +3455,9 @@ export default function App() {
   const [language, setLanguageState] = useState(() => {
     try {
       const saved = localStorage.getItem("cosmicall_lang");
-      return saved === "en" || saved === "es" ? saved : "es";
+      return saved === "en" || saved === "es" ? saved : "en";
     } catch {
-      return "es";
+      return "en";
     }
   });
 
